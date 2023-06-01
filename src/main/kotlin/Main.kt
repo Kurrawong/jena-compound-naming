@@ -142,10 +142,6 @@ fun main() {
 
     val dataset = DatasetFactory.createTxnMem()
     val model = dataset.defaultModel
-    val subject = model.createResource("http://example.org/subject")
-    val predicate = model.createProperty("http://example.org/predicate")
-    val `object` = model.createLiteral("This is a test")
-    model.add(subject, predicate, `object`)
     model.read(reader, "https://example.com/", "TURTLE")
 
     val queryString = """
