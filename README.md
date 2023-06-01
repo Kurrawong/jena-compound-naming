@@ -1,6 +1,6 @@
 # Jena ARQ Property Functions for Compound Naming
 
-Initial proof of concept implementation.
+Initial proof of concept implementation. See the [Compound Naming Model](https://agldwg.github.io/compound-naming-model/model.html) for more information.
 
 ## Example
 
