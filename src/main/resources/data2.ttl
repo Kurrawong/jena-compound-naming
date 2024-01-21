@@ -1,0 +1,92 @@
+PREFIX act: <https://w3id.org/profile/anz-address/AnzAddressComponentTypes/>
+PREFIX addr: <https://w3id.org/profile/anz-address/>
+PREFIX astiso: <http://def.isotc211.org/iso19160/-1/2015/Address/code/AnzAddressStatusTypes/>
+PREFIX astisocs: <http://def.isotc211.org/iso19160/-1/2015/Address/code/AnzAddressStatusTypes>
+PREFIX cn: <https://linked.data.gov.au/def/cn/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX lifecycle: <https://linked.data.gov.au/def/lifecycle/>
+PREFIX lst: <http://def.isotc211.org/iso19160/-1/2015/Address/code/AnzAddressLifecycleStageTypes/>
+PREFIX ns1: <http://www.w3.org/ns/prov#>
+PREFIX rct: <https://linked.data.gov.au/def/roads/ct/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX roads: <https://linked.data.gov.au/def/roads/>
+PREFIX sdo: <https://schema.org/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<https://linked.data.gov.au/dataset/qld-addr/addr-obj-33254>
+    a addr:AddressableObject ;
+    sdo:name <https://linked.data.gov.au/dataset/qld-addr/addr-2522774> ;
+    addr:hasAddress <https://linked.data.gov.au/dataset/qld-addr/addr-2522774> ;
+.
+
+<https://example.com/flatTypeCode/U>
+    sdo:additionalType act:flatTypeCode ;
+    rdf:value "U" ;
+.
+
+<https://linked.data.gov.au/dataset/qld-addr/addr-2522774>
+    a
+        cn:CompoundName ,
+        addr:Address ;
+    cn:isNameFor <https://linked.data.gov.au/dataset/qld-addr/addr-obj-33254> ;
+    lifecycle:hasLifecycleStage <https://linked.data.gov.au/dataset/qld-addr/lifecycle-2522774-1-2944453> ;
+    sdo:hasPart
+        [
+            rdf:value <https://linked.data.gov.au/dataset/qld-addr/road-QLDRMAR1534104027957583430> ;
+            sdo:additionalType act:streetLocality
+        ] ,
+        [
+            rdf:value <https://example.com/flatTypeCode/U> ;
+            sdo:additionalType act:flatTypeCode
+        ] ,
+        [
+            rdf:value "220" ;
+            sdo:additionalType act:numberFirst
+        ] ,
+        [
+            rdf:value "3" ;
+            sdo:additionalType act:flatNumber
+        ] ,
+        [
+            rdf:value "C" ;
+            sdo:additionalType act:flatNumberSuffix
+        ] ,
+        [
+            rdf:value <https://linked.data.gov.au/dataset/qld-addr/locality-LABRADOR> ;
+            sdo:additionalType act:locality
+        ] ;
+    addr:hasGeocode <https://linked.data.gov.au/dataset/qld-addr/geocode-33254> ;
+    addr:isAddressFor <https://linked.data.gov.au/dataset/qld-addr/addr-obj-33254> ;
+.
+
+<https://linked.data.gov.au/dataset/qld-addr/road-QLDRMAR1534104027957583430>
+    a roads:RoadObject ;
+    sdo:name <https://linked.data.gov.au/dataset/qld-addr/road-label-QLDRMAR1534104027957583430> ;
+.
+
+<https://linked.data.gov.au/dataset/qld-addr/road-label-QLDRMAR1534104027957583430>
+    a
+        cn:CompoundName ,
+        roads:RoadLabel ;
+    cn:isNameFor <https://linked.data.gov.au/dataset/qld-addr/road-QLDRMAR1534104027957583430> ;
+    sdo:hasPart
+        [
+            rdf:value "Marine" ;
+            sdo:additionalType rct:RoadName
+        ] ,
+        [
+            rdf:value "PDE (Y)" ;
+            sdo:additionalType rct:RoadType
+        ] ;
+.
+
+<https://linked.data.gov.au/dataset/qld-addr/locality-LABRADOR>
+    a addr:Locality ;
+    rdfs:label "LABRADOR" ;
+    rdf:value "LABRADOR" ;
+    sdo:additionalType act:locality ;
+.
