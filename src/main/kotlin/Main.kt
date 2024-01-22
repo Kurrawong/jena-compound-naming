@@ -9,7 +9,7 @@ import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry
 fun main() {
     val propertyFunctionRegistry = PropertyFunctionRegistry.chooseRegistry(ARQ.getContext())
     propertyFunctionRegistry.put(
-        "https://linked.data.gov.au/def/cn/func/getLiteralComponents",
+        "https://linked.data.gov.au/def/cn/func/getComponents",
         GetComponentsPropertyFunctionFactory()
     )
     PropertyFunctionRegistry.set(ARQ.getContext(), propertyFunctionRegistry)
@@ -38,7 +38,7 @@ SELECT *
 WHERE {
     GRAPH ?g {
         BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-obj-1075435> AS ?iri)
-        ?iri func:getLiteralComponents (?componentType ?componentValue ?componentId) .
+        ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentType ?componentValue ?componentId) .
     }
 }
 limit 10
