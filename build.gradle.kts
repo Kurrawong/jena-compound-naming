@@ -1,3 +1,4 @@
+val projectVersion: String by project
 val log4jVersion: String by project
 val kotlinxSerializationJsonVersion: String by project
 val jenaVersion: String by project
@@ -9,7 +10,7 @@ plugins {
 }
 
 group = "ai.kurrawong.jena"
-version = "0.1.0"
+version = projectVersion
 
 repositories {
     mavenCentral()
