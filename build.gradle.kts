@@ -1,7 +1,6 @@
-val log4j_version: String by project
-val kotlinx_serialization_json_version: String by project
-val jena_core_version: String by project
-val jena_arq_version: String by project
+val log4jVersion: String by project
+val kotlinxSerializationJsonVersion: String by project
+val jenaVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.8.21"
@@ -9,7 +8,7 @@ plugins {
     application
 }
 
-group = "com.edmondchuc.jena-playground"
+group = "ai.kurrawong.jena"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -18,14 +17,25 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("org.apache.logging.log4j:log4j:$log4j_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_json_version")
-    implementation("org.apache.jena:jena-core:$jena_core_version")
-    implementation("org.apache.jena:jena-arq:$jena_arq_version")
+    implementation("org.apache.logging.log4j:log4j:$log4jVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationJsonVersion")
+    implementation("org.apache.jena:jena-core:$jenaVersion")
+    implementation("org.apache.jena:jena-arq:$jenaVersion")
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.register<Jar>("uberJar") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    from(sourceSets.main.get().output)
+
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
 }
 
 kotlin {
