@@ -74,7 +74,7 @@ class getComponents : PFuncSimpleAndList() {
         val bindings = mutableListOf<Binding>()
         for (triple in compoundName.data.iterator()) {
             val componentId =
-                if (triple.third.isBlank) "_:${triple.third.blankNodeLabel}" else "<${triple.third.uri}>"
+                if (triple.third.isBlank) "_:B${triple.third.blankNodeLabel}" else "<${triple.third.uri}>"
             val rowBinding = BindingFactory.binding(
                 Var.alloc(subjectVar),
                 binding?.get(subjectVar),
