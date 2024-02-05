@@ -38,7 +38,7 @@ class getComponents : PFuncSimpleAndList() {
     ) {
         super.build(argSubject, predicate, argObject, execCxt)
         if (argObject?.argListSize != 4) {
-            throw Exception("A call to function <https://linked.data.gov.au/def/cn/func/getLiteralComponents> must contain 4 arguments.")
+            throw Exception("A call to function ai.kurrawong.jena.compoundnaming.getComponents must contain 4 arguments.")
         }
     }
 
