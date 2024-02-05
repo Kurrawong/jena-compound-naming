@@ -2,9 +2,19 @@ package ai.kurrawong.jena.compoundnaming
 
 import org.apache.jena.graph.Graph
 import org.apache.jena.graph.Node
+import java.io.Serializable
+
+/**
+ * Represents a 4-tuple.
+ *
+ * Same as a Pair or a Triple in Kotlin stdlib but for 4 values.
+ */
+data class Quadruple<A,B,C,D>(var first: A, var second: B, var third: C, var fourth: D): Serializable {
+    override fun toString(): String = "($first, $second, $third, $fourth)"
+}
 
 class CompoundName(private val graph: Graph, private var componentQueue: List<Node>) {
-    val data = mutableSetOf<Triple<Node, Node, Node>>()
+    val data = mutableSetOf<Quadruple<Node, Node, Node, Node>>()
 
     init {
         while (componentQueue.isNotEmpty()) {
@@ -20,7 +30,14 @@ class CompoundName(private val graph: Graph, private var componentQueue: List<No
         }
     }
 
-    private fun getComponentLiteral(focusNode: Node): Triple<Node, Node, Node> {
+    /**
+     * Return a Quadruple data structure containing:
+     * - first - the component identifier - an IRI or internal system identifier as a blank node
+     * - second - the component type - an IRI
+     * - third - the component's predicate which contains the value
+     * - fourth - the component's value
+     */
+    private fun getComponentLiteral(focusNode: Node): Quadruple<Node, Node, Node, Node> {
         val result = graph.find(focusNode, hasValue, Node.ANY).toList()
         var sdoNames = graph.find(focusNode, sdoName, Node.ANY).toList().map { triple -> triple.`object` }
         var hasParts = graph.find(focusNode, hasPart, Node.ANY).toList().map { triple -> triple.`object` }
@@ -59,6 +76,6 @@ class CompoundName(private val graph: Graph, private var componentQueue: List<No
             throw Exception("Focus node $focusNode does not have a component type.")
         }
 
-        return Triple(componentTypes[0].`object`, value.`object`, value.subject)
+        return Quadruple(value.subject, componentTypes[0].`object`,  value.predicate, value.`object`)
     }
 }
