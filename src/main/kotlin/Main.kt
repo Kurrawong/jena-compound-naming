@@ -1,5 +1,6 @@
-/* Example usage
-* */
+/**
+ * Example usage.
+ */
 import ai.kurrawong.jena.compoundnaming.GetComponentsPropertyFunctionFactory
 
 import org.apache.jena.query.*
@@ -38,22 +39,11 @@ SELECT *
 WHERE {
     GRAPH ?g {
         BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-obj-1837741> AS ?iri)
-        ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentType ?componentValue ?componentId) .
+        ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentId ?componentType ?componentValuePredicate ?componentValue) .
     }
 }
 limit 10
             """.trimIndent()
-
-//    val queryString = """
-//PREFIX func: <https://linked.data.gov.au/def/cn/func/>
-//
-//SELECT *
-//WHERE {
-//    BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-obj-33254> AS ?iri)
-//    ?iri func:getLiteralComponents (?componentType ?componentValue ?componentId) .
-//}
-//limit 10
-//            """.trimIndent()
 
     val query = QueryFactory.create(queryString)
 
@@ -61,15 +51,4 @@ limit 10
         val results = qexec.execSelect()
         ResultSetFormatter.out(System.out, results, query)
     }
-
-//    val query2 = QueryFactory.create(
-//        """
-//        DESCRIBE <https://linked.data.gov.au/dataset/qld-addr/addr-1075435>
-//    """.trimIndent()
-//    )
-//
-//    QueryExecutionFactory.create(query2, dataset).use { queryExecution ->
-//        val results = queryExecution.execDescribe()
-//        results.write(System.out, "TURTLE")
-//    }
 }
