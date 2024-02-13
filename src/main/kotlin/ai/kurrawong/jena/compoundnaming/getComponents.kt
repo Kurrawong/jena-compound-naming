@@ -6,11 +6,9 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.QueryIterator
 import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper
 import org.apache.jena.sparql.pfunction.*
 
-val hasAddress: Node = NodeFactory.createURI("https://w3id.org/profile/anz-address/hasAddress")
 val hasPart: Node = NodeFactory.createURI("https://schema.org/hasPart")
 val hasValue: Node = NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#value")
 val sdoName: Node = NodeFactory.createURI("https://schema.org/name")
@@ -57,14 +55,7 @@ class getComponents : PFuncSimpleAndList() {
             throw Exception("The binding is null.")
 
         val graph = execCxt.activeGraph
-        val result = graph.find(subject, hasAddress, Node.ANY).toList()
-
-        if (result.size < 1) {
-            return QueryIterNullIterator(execCxt)
-        }
-
-        val address = result[0].`object`
-        val addrComponents = graph.find(address, hasPart, Node.ANY).toList().map { it.`object` }
+        val addrComponents = graph.find(subject, hasPart, Node.ANY).toList().map { it.`object` }
         val compoundName = CompoundName(graph, addrComponents)
 
         var subjectVar: Var? = null
