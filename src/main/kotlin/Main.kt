@@ -38,7 +38,7 @@ PREFIX func: <https://linked.data.gov.au/def/cn/func/>
 SELECT *
 WHERE {
     GRAPH ?g {
-        BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-obj-1837741> AS ?iri)
+        BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-2285769> AS ?iri)
         ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentId ?componentType ?componentValuePredicate ?componentValue) .
     }
 }
