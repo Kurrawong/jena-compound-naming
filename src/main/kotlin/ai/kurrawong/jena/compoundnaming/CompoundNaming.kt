@@ -67,7 +67,15 @@ class CompoundName(private val graph: Graph, private var componentQueue: List<No
         val value = result[0]
 
         if (value.`object`.isURI) {
-            return getComponentLiteral(value.`object`)
+            try {
+                return getComponentLiteral(value.`object`)
+            }
+            catch (_: Exception) {
+                // Catch the exception thrown when no rdf:value is found on value.object.
+                // Use this as the value instead.
+                // Applications using this function will need to check whether any componentValue values are IRIs and
+                // handle it by deriving the label for the object in some other way.
+            }
         }
 
         val componentTypes = graph.find(focusNode, additionalType, Node.ANY).toList()
