@@ -63,7 +63,6 @@ class getComponents : PFuncSimpleAndList() {
         if (vars != null) {
             while (vars.hasNext()) {
                 subjectVar = vars.next()
-                break
             }
         }
         if (subjectVar == null) {
@@ -75,7 +74,7 @@ class getComponents : PFuncSimpleAndList() {
             val componentId =
                 if (quadruple.first.isBlank) "_:B${quadruple.first.blankNodeLabel}" else "<${quadruple.first.uri}>"
             val rowBinding = Binding5(
-                null,
+                binding,
                 Var.alloc(subjectVar),
                 binding.get(subjectVar),
                 Var.alloc(`object`?.getArg(0)?.name),

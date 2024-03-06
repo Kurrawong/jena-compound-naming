@@ -32137,10 +32137,10 @@ astiso:unofficial
     rdf:value "U" ;
 .
 
-<https://linked.data.gov.au/dataset/gnaf/code/levelType/G>
-    sdo:additionalType act:levelTypeCode ;
-    rdf:value "G" ;
-.
+#<https://linked.data.gov.au/dataset/gnaf/code/levelType/G>
+#    sdo:additionalType act:levelTypeCode ;
+#    rdf:value "G" ;
+#.
 
 <https://linked.data.gov.au/dataset/qld-addr/addr-2285769>
     a

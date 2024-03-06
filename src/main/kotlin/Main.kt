@@ -34,11 +34,13 @@ fun main() {
 
     val queryString = """
 PREFIX func: <https://linked.data.gov.au/def/cn/func/>
+PREFIX sdo: <https://schema.org/>
 
 SELECT *
 WHERE {
     GRAPH ?g {
-        BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-2285769> AS ?iri)
+        BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-obj-1837741> AS ?objectIri)
+        ?objectIri sdo:name ?iri .
         ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentId ?componentType ?componentValuePredicate ?componentValue) .
     }
 }
