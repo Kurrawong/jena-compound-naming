@@ -1,92 +1,177 @@
-PREFIX act: <https://w3id.org/profile/anz-address/AnzAddressComponentTypes/>
-PREFIX addr: <https://w3id.org/profile/anz-address/>
-PREFIX astiso: <http://def.isotc211.org/iso19160/-1/2015/Address/code/AnzAddressStatusTypes/>
-PREFIX astisocs: <http://def.isotc211.org/iso19160/-1/2015/Address/code/AnzAddressStatusTypes>
-PREFIX cn: <https://linked.data.gov.au/def/cn/>
+PREFIX dcat:    <http://www.w3.org/ns/dcat#>
 PREFIX dcterms: <http://purl.org/dc/terms/>
-PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX lifecycle: <https://linked.data.gov.au/def/lifecycle/>
-PREFIX lst: <http://def.isotc211.org/iso19160/-1/2015/Address/code/AnzAddressLifecycleStageTypes/>
-PREFIX ns1: <http://www.w3.org/ns/prov#>
-PREFIX rct: <https://linked.data.gov.au/def/roads/ct/>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX roads: <https://linked.data.gov.au/def/roads/>
-PREFIX sdo: <https://schema.org/>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX time: <http://www.w3.org/2006/time#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ns1:     <http://purl.org/linked-data/registry#>
+PREFIX owl:     <http://www.w3.org/2002/07/owl#>
+PREFIX prov:    <http://www.w3.org/ns/prov#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema:  <https://schema.org/>
+PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
 
-<https://linked.data.gov.au/dataset/qld-addr/addr-obj-33254>
-    a addr:AddressableObject ;
-    sdo:name <https://linked.data.gov.au/dataset/qld-addr/addr-2522774> ;
-    addr:hasAddress <https://linked.data.gov.au/dataset/qld-addr/addr-2522774> ;
-.
+<https://linked.data.gov.au/dataset/qld-addr/road-label/QLDRGOL1534374428054953430>
+        a                          <https://linked.data.gov.au/def/roads/RoadLabel> , <https://linked.data.gov.au/def/cn/CompoundName>;
+        rdfs:label                 "Gold Coast Highway";
+        <https://linked.data.gov.au/def/cn/isNameFor>
+                <https://linked.data.gov.au/dataset/qld-addr/road/QLDRGOL1534374428054953430>;
+        <https://linked.data.gov.au/def/cn/nameTemplate>
+                "{RNPT.RoadGivenName} {RNPT.RoadType} {RNPT.RoadSuffix}";
+        <https://linked.data.gov.au/def/lifecycle/hasLifecycleStage>
+                [ schema:additionalType  <https://linked.data.gov.au/def/reg-statuses/accepted> ];
+        schema:additionalProperty  [ schema:propertyID  "road_name_basic_2";
+                                     schema:value       "GOLD COAST HIGHWAY"
+                                   ];
+        schema:additionalProperty  [ schema:propertyID  "road_name_2_source";
+                                     schema:value       "R"
+                                   ];
+        schema:additionalProperty  [ schema:propertyID  "road_name_basic_1";
+                                     schema:value       "GOLD COAST HIGHWAY"
+                                   ];
+        schema:additionalProperty  [ schema:propertyID  "road_name_1_source";
+                                     schema:value       "TMR" , "R" , "BRAT"
+                                   ];
+        schema:hasPart             [ schema:additionalType  <https://linked.data.gov.au/def/road-name-part-types/RoadSuffix>;
+                                     schema:value           <https://linked.data.gov.au/def/gn-affix/east>
+                                   ];
+        schema:hasPart             [ schema:additionalType  <https://linked.data.gov.au/def/road-name-part-types/RoadGivenName>;
+                                     schema:value           "Gold Coast"
+                                   ];
+        schema:hasPart             [ schema:additionalType  <https://linked.data.gov.au/def/road-name-part-types/RoadType>;
+                                     schema:value           <https://linked.data.gov.au/def/road-types/highway>
+                                   ];
+        schema:name                "Gold Coast Highway" .
 
-<https://example.com/flatTypeCode/U>
-    sdo:additionalType act:flatTypeCode ;
-    rdf:value "U" ;
-.
+<https://linked.data.gov.au/def/gn-affix/east>
+        a                  skos:Concept;
+        rdfs:isDefinedBy   <https://linked.data.gov.au/def/gn-affix>;
+        skos:altLabel      "E"@en , "Eastern"@en;
+        skos:definition    "Cardinal direction of east."@en;
+        skos:historyNote   "Integrated from AS4590.1:2017. Alternate labels expanded by QLD on 2024-06-11.";
+        skos:inScheme      <https://linked.data.gov.au/def/gn-affix>;
+        skos:prefLabel     "East"@en;
+        skos:topConceptOf  <https://linked.data.gov.au/def/gn-affix>;
+        schema:citation    "AS 4590.1:2017 | Standards Australia"^^xsd:anyURI .
 
-<https://linked.data.gov.au/dataset/qld-addr/addr-2522774>
-    a
-        cn:CompoundName ,
-        addr:Address ;
-    cn:isNameFor <https://linked.data.gov.au/dataset/qld-addr/addr-obj-33254> ;
-    lifecycle:hasLifecycleStage <https://linked.data.gov.au/dataset/qld-addr/lifecycle-2522774-1-2944453> ;
-    sdo:hasPart
-        [
-            rdf:value <https://linked.data.gov.au/dataset/qld-addr/road-QLDRMAR1534104027957583430> ;
-            sdo:additionalType act:streetLocality
-        ] ,
-        [
-            rdf:value <https://example.com/flatTypeCode/U> ;
-            sdo:additionalType act:flatTypeCode
-        ] ,
-        [
-            rdf:value "220" ;
-            sdo:additionalType act:numberFirst
-        ] ,
-        [
-            rdf:value "3" ;
-            sdo:additionalType act:flatNumber
-        ] ,
-        [
-            rdf:value "C" ;
-            sdo:additionalType act:flatNumberSuffix
-        ] ,
-        [
-            rdf:value <https://linked.data.gov.au/dataset/qld-addr/locality-LABRADOR> ;
-            sdo:additionalType act:locality
-        ] ;
-    addr:hasGeocode <https://linked.data.gov.au/dataset/qld-addr/geocode-33254> ;
-    addr:isAddressFor <https://linked.data.gov.au/dataset/qld-addr/addr-obj-33254> ;
-.
+<https://sws.geonames.org/2152274/>
+        a                    skos:Concept;
+        rdfs:isDefinedBy     <https://linked.data.gov.au/def/states-and-territories>;
+        skos:definition      "State of Queensland.";
+        skos:inScheme        <https://linked.data.gov.au/def/states-and-territories>;
+        skos:prefLabel       "Queensland";
+        skos:topConceptOf    <https://linked.data.gov.au/def/states-and-territories>;
+        prov:wasDerivedFrom  <https://www.geonames.org/> .
 
-<https://linked.data.gov.au/dataset/qld-addr/road-QLDRMAR1534104027957583430>
-    a roads:RoadObject ;
-    sdo:name <https://linked.data.gov.au/dataset/qld-addr/road-label-QLDRMAR1534104027957583430> ;
-.
+<https://linked.data.gov.au/def/road-types/highway>
+        a                  skos:Concept;
+        rdfs:isDefinedBy   <https://linked.data.gov.au/def/road-types>;
+        dcterms:source     "AS/NZS 4819:2011 - Standards Australia"^^xsd:anyURI;
+        skos:altLabel      "Hwy"@en , "HWY"@en;
+        skos:definition    "Main road or thoroughfare, a main route. Should be an open ended thoroughfare"@en;
+        skos:historyNote   "AS/NZS4819:2011, AS4590.1:2017, NSW, QLD, TAS, VIC, WA, NZ roads data. Definition from AS/NZS4819:2011.";
+        skos:inScheme      <https://linked.data.gov.au/def/road-types>;
+        skos:prefLabel     "Highway"@en;
+        skos:topConceptOf  <https://linked.data.gov.au/def/road-types> .
 
-<https://linked.data.gov.au/dataset/qld-addr/road-label-QLDRMAR1534104027957583430>
-    a
-        cn:CompoundName ,
-        roads:RoadLabel ;
-    cn:isNameFor <https://linked.data.gov.au/dataset/qld-addr/road-QLDRMAR1534104027957583430> ;
-    sdo:hasPart
-        [
-            rdf:value "Marine" ;
-            sdo:additionalType rct:RoadName
-        ] ,
-        [
-            rdf:value "PDE (Y)" ;
-            sdo:additionalType rct:RoadType
-        ] ;
-.
+<https://linked.data.gov.au/dataset/qld-addr/gn/50200>
+        a                          <https://linked.data.gov.au/def/cn/CompoundName> , <https://linked.data.gov.au/def/gn/GeographicalName>;
+        rdfs:label                 "Mermaid Beach";
+        skos:historyNote           "Name derived from the beach  which was named after the HMS Mermaid, Oxley's Sloop in which he discovered the Tweed and Brisbane Rivers.\n\nName and boundaries approved by Governor in Council 1 December 1982. Boundaries amended by the Minister for Natural Resources and Minister for Mines, 7 February 2003.  Coordinates amended by the Minister for Natural Resources and Minister for Mines 13 June 2003.  Regazetted by the Minister for Natural Resources, Mines and Energy and Minister for Trade on the 27 November 2009 due to the council amalgamations under the Local Government Reform Implementation Act 2007. Boundary amendment between Mermaid Beach and Mermaid Waters, via action #17097, effective from 11/04/2018."@en;
+        <https://linked.data.gov.au/def/cn/hasAuthority>
+                <https://linked.data.gov.au/def/naming-authority/qld-pn-act-1994>;
+        <https://linked.data.gov.au/def/cn/isNameFor>
+                <https://linked.data.gov.au/dataset/qld-addr/go/50200>;
+        <https://linked.data.gov.au/def/cn/nameTemplate>
+                "{GNPT.geographicalPrefix} {GNPT.geographicalGivenName} {GNPT.geographicalSuffix}";
+        <https://linked.data.gov.au/def/lifecycle/hasLifecycleStage>
+                [ <http://www.w3.org/2006/time#hasBeginning>
+                          [ <http://www.w3.org/2006/time#inXSDDate>
+                                    "2018-05-18"^^xsd:date ];
+                  schema:additionalType  <https://linked.data.gov.au/def/gn-statuses/gazetted>
+                ];
+        schema:additionalProperty  [ schema:propertyID  "status";
+                                     schema:value       "Y"
+                                   ];
+        schema:additionalProperty  [ schema:propertyID  "currency";
+                                     schema:value       "Y"
+                                   ];
+        schema:additionalProperty  [ schema:propertyID  "gazette_page";
+                                     schema:value       "162"
+                                   ];
+        schema:hasPart             [ schema:additionalType  <https://linked.data.gov.au/def/gn-part-types/geographicalGivenName>;
+                                     schema:value           "Mermaid Beach"@en
+                                   ];
+        schema:name                "Mermaid Beach" .
 
-<https://linked.data.gov.au/dataset/qld-addr/locality-LABRADOR>
-    a addr:Locality ;
-    rdfs:label "LABRADOR" ;
-    rdf:value "LABRADOR" ;
-    sdo:additionalType act:locality ;
-.
+<https://linked.data.gov.au/dataset/qld-addr/address/e37309a2-3916-506e-b334-30ebb444c213>
+        a                      <https://linked.data.gov.au/def/addr/Address> , <https://linked.data.gov.au/def/cn/CompoundName>;
+        rdfs:label             "Level 2 Unit 138/2342-2358 Gold Coast Highway, Mermaid Beach, Queensland, Australia";
+        <https://linked.data.gov.au/def/addr/hasGeocode>
+                <https://linked.data.gov.au/dataset/qld-addr/geocode/1837865>;
+        <https://linked.data.gov.au/def/addr/hasStatus>
+                <https://linked.data.gov.au/def/address-status-type/primary>;
+        <https://linked.data.gov.au/def/cn/isNameFor>
+                <https://linked.data.gov.au/dataset/qld-addr/parcel/138SP133857>;
+        <https://linked.data.gov.au/def/lifecycle/hasLifecycleStage>
+                [ <http://www.w3.org/2006/time#hasBeginning>
+                          [ <http://www.w3.org/2006/time#inXSDDateTime>
+                                    "2011-11-25T12:12:50"^^xsd:dateTime ];
+                  schema:additionalType  <https://linked.data.gov.au/def/lifecycle-stage-types/current>
+                ];
+        schema:additionalType  <https://linked.data.gov.au/def/address-classes/street>;
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/buildingLevelType>;
+                                 schema:value           <https://linked.data.gov.au/def/building-level-types/level>
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/buildingLevelNumber>;
+                                 schema:value           "2"
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/subaddressType>;
+                                 schema:value           <https://linked.data.gov.au/def/subaddress-types/unit>
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/subaddressNumber>;
+                                 schema:value           "138"
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/addressNumberFirst>;
+                                 schema:value           "2342"
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/addressNumberLast>;
+                                 schema:value           "2358"
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/road>;
+                                 schema:value           <https://linked.data.gov.au/dataset/qld-addr/road-label/QLDRGOL1534374428054953430>
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/geographicName>;
+                                 schema:value           <https://linked.data.gov.au/dataset/qld-addr/gn/50200>
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/stateOrTerritory>;
+                                 schema:value           <https://sws.geonames.org/2152274/>
+                               ];
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/countryName>;
+                                 schema:value           <https://sws.geonames.org/2077456/>
+                               ];
+        schema:identifier      "2285893"^^<urn:ladb:sir-id> .
+
+<https://sws.geonames.org/2077456/>
+        a                    skos:Concept;
+        rdfs:isDefinedBy     <https://linked.data.gov.au/def/countries>;
+        skos:definition      "Commonwealth of Australia.";
+        skos:inScheme        <https://linked.data.gov.au/def/countries>;
+        skos:prefLabel       "Australia";
+        skos:topConceptOf    <https://linked.data.gov.au/def/countries>;
+        prov:wasDerivedFrom  <https://www.geonames.org/> .
+
+<https://linked.data.gov.au/def/building-level-types/level>
+        a                  skos:Concept;
+        skos:altLabel      "LG"@en;
+        skos:definition    "A generic building level"@en;
+        skos:inScheme      <https://linked.data.gov.au/def/building-level-types>;
+        skos:prefLabel     "Level"@en;
+        skos:topConceptOf  <https://linked.data.gov.au/def/building-level-types>;
+        schema:citation    "AS4590.1:2017 & AS/NZS 4819:2011 - Standards Australia" .
+
+<https://linked.data.gov.au/def/subaddress-types/unit>
+        a                  skos:Concept;
+        skos:altLabel      "UNIT"@en , "U"@en;
+        skos:definition    "Unit"@en;
+        skos:inScheme      <https://linked.data.gov.au/def/subaddress-types>;
+        skos:prefLabel     "Unit"@en;
+        skos:topConceptOf  <https://linked.data.gov.au/def/subaddress-types>;
+        schema:citation    "AS4590.1:2017" , "https://store.standards.org.au/product/as-4590-1-2017"^^xsd:anyURI .
