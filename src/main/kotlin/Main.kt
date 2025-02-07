@@ -36,8 +36,8 @@ PREFIX sdo: <https://schema.org/>
 SELECT *
 WHERE {
     GRAPH ?g {
-        # BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-2522774> AS ?iri)
-        BIND(<https://linked.data.gov.au/dataset/qld-addr/address/e37309a2-3916-506e-b334-30ebb444c213> AS ?iri)
+        BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-2522774> AS ?iri)
+        # BIND(<https://linked.data.gov.au/dataset/qld-addr/address/e37309a2-3916-506e-b334-30ebb444c213> AS ?iri)
         ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentId ?componentType ?componentValuePredicate ?componentValue) .
     }
 }
