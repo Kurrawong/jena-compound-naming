@@ -3,14 +3,13 @@
  */
 import ai.kurrawong.jena.compoundnaming.GetPartsPropertyFunctionFactory
 import ai.kurrawong.jena.compoundnaming.loadModelFromResource
-
 import org.apache.jena.query.*
 import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry
 
 fun main() {
     PropertyFunctionRegistry.get().put(
         "https://linked.data.gov.au/def/cn/func/getParts",
-        GetPartsPropertyFunctionFactory()
+        GetPartsPropertyFunctionFactory(),
     )
 
     val dataset = DatasetFactory.createTxnMem()
@@ -19,7 +18,8 @@ fun main() {
     dataset.addNamedModel("urn:graph:address", model)
     dataset.addNamedModel("urn:graph:address2", model2)
 
-    val queryString = """
+    val queryString =
+        """
 PREFIX cnf: <https://linked.data.gov.au/def/cn/func/>
 PREFIX sdo: <https://schema.org/>
 
@@ -32,7 +32,7 @@ WHERE {
     }
 }
 limit 10
-            """.trimIndent()
+        """.trimIndent()
 
     val query = QueryFactory.create(queryString)
 

@@ -2,13 +2,13 @@ package ai.kurrawong.jena.compoundnaming
 
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.query.*
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.QueryIterator
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper
 import org.apache.jena.sparql.pfunction.*
-import org.apache.jena.query.*
 
 /**
  * A SPARQL property function to retrieve the leaf nodes of a CompoundName object.
@@ -18,11 +18,10 @@ import org.apache.jena.query.*
  */
 class getParts : PFuncSimpleAndList() {
     companion object {
-
         @JvmStatic
         fun init() {
             println("Initializing ai.kurrawong.jena.compoundnaming.getParts property function")
-            
+
             // Register the property function with the IRI
             val PROPERTY_FUNCTION_IRI = "https://linked.data.gov.au/def/cn/func/getParts"
             val registry = PropertyFunctionRegistry.chooseRegistry(ARQ.getContext())
@@ -35,7 +34,7 @@ class getParts : PFuncSimpleAndList() {
         argSubject: PropFuncArg?,
         predicate: Node?,
         argObject: PropFuncArg?,
-        execCxt: ExecutionContext?
+        execCxt: ExecutionContext?,
     ) {
         super.build(argSubject, predicate, argObject, execCxt)
         if (argObject?.argListSize != 4) {
@@ -48,14 +47,15 @@ class getParts : PFuncSimpleAndList() {
         subject: Node?,
         predicate: Node?,
         `object`: PropFuncArg?,
-        execCxt: ExecutionContext?
+        execCxt: ExecutionContext?,
     ): QueryIterator {
         if (execCxt?.activeGraph == null) {
             throw Exception("Active graph is null.")
         }
 
-        if (binding == null)
+        if (binding == null) {
             throw Exception("The binding is null.")
+        }
 
         val graph = execCxt.activeGraph
         val topLevelParts = graph.find(subject, hasPart, Node.ANY).toList().map { it.`object` }
@@ -76,19 +76,20 @@ class getParts : PFuncSimpleAndList() {
         for (quadruple in compoundName.data.iterator()) {
             val partId =
                 if (quadruple.first.isBlank) "_:B${quadruple.first.blankNodeLabel}" else "<${quadruple.first.uri}>"
-            val rowBinding = Binding5(
-                binding,
-                Var.alloc(subjectVar),
-                binding.get(subjectVar),
-                Var.alloc(`object`?.getArg(0)?.name),
-                NodeFactory.createLiteral(partId, null, null),
-                Var.alloc(`object`?.getArg(1)?.name),
-                quadruple.second,
-                Var.alloc(`object`?.getArg(2)?.name),
-                quadruple.third,
-                Var.alloc(`object`?.getArg(3)?.name),
-                quadruple.fourth
-            )
+            val rowBinding =
+                Binding5(
+                    binding,
+                    Var.alloc(subjectVar),
+                    binding.get(subjectVar),
+                    Var.alloc(`object`?.getArg(0)?.name),
+                    NodeFactory.createLiteral(partId, null, null),
+                    Var.alloc(`object`?.getArg(1)?.name),
+                    quadruple.second,
+                    Var.alloc(`object`?.getArg(2)?.name),
+                    quadruple.third,
+                    Var.alloc(`object`?.getArg(3)?.name),
+                    quadruple.fourth,
+                )
             bindings.add(rowBinding)
         }
 

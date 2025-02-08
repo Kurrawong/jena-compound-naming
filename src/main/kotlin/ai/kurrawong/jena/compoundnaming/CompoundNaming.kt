@@ -9,7 +9,10 @@ val hasValue: Node = NodeFactory.createURI("https://schema.org/value")
 val sdoName: Node = NodeFactory.createURI("https://schema.org/name")
 val additionalType: Node = NodeFactory.createURI("https://schema.org/additionalType")
 
-class CompoundName(private val graph: Graph, private var topLevelParts: List<Node>) {
+class CompoundName(
+    private val graph: Graph,
+    topLevelParts: List<Node>,
+) {
     val data = mutableSetOf<Quadruple<Node, Node, Node, Node>>()
     val partsQueue = topLevelParts.toMutableList()
 
@@ -66,8 +69,7 @@ class CompoundName(private val graph: Graph, private var topLevelParts: List<Nod
         if (value.`object`.isURI) {
             try {
                 return getComponentLiteral(value.`object`)
-            }
-            catch (_: Exception) {
+            } catch (_: Exception) {
                 // Catch the exception thrown when no rdf:value is found on value.object.
                 // Use this as the value instead.
                 // Applications using this function will need to check whether any componentValue values are IRIs and
@@ -81,6 +83,6 @@ class CompoundName(private val graph: Graph, private var topLevelParts: List<Nod
             throw Exception("Focus node $focusNode does not have a component type.")
         }
 
-        return Quadruple(value.subject, componentTypes[0].`object`,  value.predicate, value.`object`)
+        return Quadruple(value.subject, componentTypes[0].`object`, value.predicate, value.`object`)
     }
 }
