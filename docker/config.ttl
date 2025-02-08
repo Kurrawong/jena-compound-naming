@@ -28,8 +28,8 @@
    # Must have a "public static void init()" method.
 
    ja:loadClass
-        "ai.kurrawong.jena.compoundnaming.getComponents" ;
-   .
+        "ai.kurrawong.jena.compoundnaming.getParts" ;
+.
 
 
 ######################

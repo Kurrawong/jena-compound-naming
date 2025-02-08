@@ -2,29 +2,25 @@ package ai.kurrawong.jena.compoundnaming
 
 import org.apache.jena.graph.Graph
 import org.apache.jena.graph.Node
-import java.io.Serializable
+import org.apache.jena.graph.NodeFactory
 
-/**
- * Represents a 4-tuple.
- *
- * Same as a Pair or a Triple in Kotlin stdlib but for 4 values.
- */
-data class Quadruple<A,B,C,D>(var first: A, var second: B, var third: C, var fourth: D): Serializable {
-    override fun toString(): String = "($first, $second, $third, $fourth)"
-}
+val hasPart: Node = NodeFactory.createURI("https://schema.org/hasPart")
+val hasValue: Node = NodeFactory.createURI("https://schema.org/value")
+val sdoName: Node = NodeFactory.createURI("https://schema.org/name")
+val additionalType: Node = NodeFactory.createURI("https://schema.org/additionalType")
 
-class CompoundName(private val graph: Graph, private var componentQueue: List<Node>) {
+class CompoundName(private val graph: Graph, private var topLevelParts: List<Node>) {
     val data = mutableSetOf<Quadruple<Node, Node, Node, Node>>()
+    val partsQueue = topLevelParts.toMutableList()
 
     init {
-        while (componentQueue.isNotEmpty()) {
-            val startingNode = componentQueue[0]
-            componentQueue = componentQueue.drop(1)
+        while (partsQueue.isNotEmpty()) {
+            val partNode = partsQueue.removeFirst()
 
-            val value = getComponentLiteral(startingNode)
+            val value = getComponentLiteral(partNode)
             data.add(value)
 
-            if (componentQueue.isEmpty()) {
+            if (partsQueue.isEmpty()) {
                 break
             }
         }
@@ -46,7 +42,7 @@ class CompoundName(private val graph: Graph, private var componentQueue: List<No
             val hasPartNode = hasParts[0]
             if (hasParts.size > 1) {
                 hasParts = hasParts.drop(1)
-                componentQueue += hasParts
+                partsQueue.addAll(hasParts)
             }
             return getComponentLiteral(hasPartNode)
         }
@@ -55,7 +51,7 @@ class CompoundName(private val graph: Graph, private var componentQueue: List<No
             val sdoNameNode = sdoNames[0]
             if (sdoNames.size > 1) {
                 sdoNames = sdoNames.drop(1)
-                componentQueue += sdoNames
+                partsQueue.addAll(sdoNames)
             }
             return getComponentLiteral(sdoNameNode)
         }
@@ -64,6 +60,7 @@ class CompoundName(private val graph: Graph, private var componentQueue: List<No
             throw Exception("Focus node $focusNode does not have any values for rdf:value.")
         }
 
+        // Always get just one value. Multiple values found is undefined behaviour.
         val value = result[0]
 
         if (value.`object`.isURI) {

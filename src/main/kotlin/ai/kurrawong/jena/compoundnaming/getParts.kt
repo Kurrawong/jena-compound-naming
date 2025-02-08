@@ -8,23 +8,26 @@ import org.apache.jena.sparql.engine.QueryIterator
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper
 import org.apache.jena.sparql.pfunction.*
-
-val hasPart: Node = NodeFactory.createURI("https://schema.org/hasPart")
-val hasValue: Node = NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#value")
-val sdoName: Node = NodeFactory.createURI("https://schema.org/name")
-val additionalType: Node = NodeFactory.createURI("https://schema.org/additionalType")
+import org.apache.jena.query.*
 
 /**
  * A SPARQL property function to retrieve the leaf nodes of a CompoundName object.
  *
  * Example usage in SPARQL:
- *      ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentId ?componentType ?componentValuePredicate ?componentValue) .
+ *      ?iri <https://linked.data.gov.au/def/cn/func/getParts> (?partId ?partType ?partValuePredicate ?partValue) .
  */
-class getComponents : PFuncSimpleAndList() {
+class getParts : PFuncSimpleAndList() {
     companion object {
+
         @JvmStatic
         fun init() {
-            println("Initializing compoundnaming.getComponents property function")
+            println("Initializing ai.kurrawong.jena.compoundnaming.getParts property function")
+            
+            // Register the property function with the IRI
+            val PROPERTY_FUNCTION_IRI = "https://linked.data.gov.au/def/cn/func/getParts"
+            val registry = PropertyFunctionRegistry.chooseRegistry(ARQ.getContext())
+            registry.put(PROPERTY_FUNCTION_IRI, GetPartsPropertyFunctionFactory())
+            PropertyFunctionRegistry.set(ARQ.getContext(), registry)
         }
     }
 
@@ -36,7 +39,7 @@ class getComponents : PFuncSimpleAndList() {
     ) {
         super.build(argSubject, predicate, argObject, execCxt)
         if (argObject?.argListSize != 4) {
-            throw Exception("A call to function ai.kurrawong.jena.compoundnaming.getComponents must contain 4 arguments.")
+            throw Exception("A call to function ai.kurrawong.jena.compoundnaming.getParts must contain 4 arguments.")
         }
     }
 
@@ -55,8 +58,8 @@ class getComponents : PFuncSimpleAndList() {
             throw Exception("The binding is null.")
 
         val graph = execCxt.activeGraph
-        val addrComponents = graph.find(subject, hasPart, Node.ANY).toList().map { it.`object` }
-        val compoundName = CompoundName(graph, addrComponents)
+        val topLevelParts = graph.find(subject, hasPart, Node.ANY).toList().map { it.`object` }
+        val compoundName = CompoundName(graph, topLevelParts)
 
         var subjectVar: Var? = null
         val vars = binding.vars()
@@ -71,14 +74,14 @@ class getComponents : PFuncSimpleAndList() {
 
         val bindings = mutableListOf<Binding>()
         for (quadruple in compoundName.data.iterator()) {
-            val componentId =
+            val partId =
                 if (quadruple.first.isBlank) "_:B${quadruple.first.blankNodeLabel}" else "<${quadruple.first.uri}>"
             val rowBinding = Binding5(
                 binding,
                 Var.alloc(subjectVar),
                 binding.get(subjectVar),
                 Var.alloc(`object`?.getArg(0)?.name),
-                NodeFactory.createLiteral(componentId),
+                NodeFactory.createLiteral(partId, null, null),
                 Var.alloc(`object`?.getArg(1)?.name),
                 quadruple.second,
                 Var.alloc(`object`?.getArg(2)?.name),

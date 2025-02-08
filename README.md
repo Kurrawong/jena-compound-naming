@@ -6,16 +6,18 @@ A library of functions for working with data in the Compound Name structure. See
 
 This repo contains a [Main.kt](src/main/kotlin/Main.kt) that loads in [src/main/resources/data.ttl](src/main/resources/data.ttl) into a dataset and registers the Compound Naming Property Functions with Jena.
 
-We can run the following SPARQL query which utilises the `getComponents` property function. This function recursively fetches all the component parts of the compound name instance and returns its type, the value and the component identifier.
+We can run the following SPARQL query which utilises the `getParts` property function. This function recursively fetches all the part parts of the compound name instance and returns its type, the value and the part identifier.
 
-Where component identifiers are blank nodes, the internal Jena system identifier is returned. This can be used in tandem with RDF Delta Patch logs to provide updates to blank node objects.
+Where part identifiers are blank nodes, the internal Jena system identifier is returned. This can be used in tandem with RDF Delta Patch logs to provide updates to blank node objects.
 
 ```sparql
+PREFIX cnf: <https://linked.data.gov.au/def/cn/func/>
+
 SELECT *
 WHERE {
-    GRAPH ?g {
+    GRAPH ?graph {
         BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-2285769> AS ?iri)
-        ?iri <java:ai.kurrawong.jena.compoundnaming.getComponents> (?componentId ?componentType ?componentValuePredicate ?componentValue) .
+        ?iri cnf:getParts (?partId ?partType ?partValuePredicate ?partValue) .
     }
 }
 limit 10
@@ -25,7 +27,7 @@ And get the following result.
 
 ```
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-| iri                                                        | componentId                                                            | componentType                                                                 | componentValuePredicate                            | componentValue  | g                   |
+| iri                                                        | partId                                                            | partType                                                                 | partValuePredicate                            | partValue  | graph                   |
 ====================================================================================================================================================================================================================================================================================================================
 | <https://linked.data.gov.au/dataset/qld-addr/addr-2285769> | "_:Ba741ac13c91c81b1a303671bfc04ae58"                                  | <https://w3id.org/profile/anz-address/AnzAddressComponentTypes/flatNumber>    | <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> | "14"            | <urn:graph:address> |
 | <https://linked.data.gov.au/dataset/qld-addr/addr-2285769> | "<https://linked.data.gov.au/dataset/qld-addr/locality-MERMAID-BEACH>" | <https://w3id.org/profile/anz-address/AnzAddressComponentTypes/locality>      | <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> | "MERMAID BEACH" | <urn:graph:address> |
@@ -41,8 +43,7 @@ And get the following result.
 ## Build
 
 ```shell
-./gradlew clean
-./gradlew uberJar
+task build
 ```
 
 ## Running with Fuseki in Docker
@@ -54,11 +55,11 @@ Within the context of the `docker` directory...
 Build the docker compose images.
 
 ```shell
-docker compose build
+task docker:build
 ```
 
 Run the docker compose services.
 
 ```shell
-docker compose up -d
+task docker:up
 ```
