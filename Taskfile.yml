@@ -23,3 +23,7 @@ tasks:
   docker:down:
     cmds:
       - docker compose -f docker/docker-compose.yml down
+
+  docker:clean:
+    cmds:
+      - docker compose -f docker/docker-compose.yml down -v
