@@ -1,5 +1,39 @@
-FROM ghcr.io/zazuko/fuseki-geosparql:v3.3.0
+ARG JENA_VERSION=5.3.0
 
-# COPY shiro.ini ${FUSEKI_BASE}/shiro.ini
+FROM amazoncorretto:17-alpine3.19
+ARG JENA_VERSION
+ENV JENA_VERSION=${JENA_VERSION}
+ENV JENA_HOME="/opt/jena"
+ENV FUSEKI_HOME="/opt/fuseki"
+ENV FUSEKI_BASE="/fuseki"
+ENV JAVA_OPTIONS="-Xmx2048m -Xms2048m"
+
+RUN apk add --no-cache \
+        bash \
+        # curl used for container health check
+        curl \
+        # jq required for tdb2.xloader
+        jq \
+        # coreutils required for tdb2.xloader with an updated version of sort with parallel support
+        coreutils
+
+# Fuseki
+RUN wget --quiet https://dlcdn.apache.org/jena/binaries/apache-jena-fuseki-${JENA_VERSION}.tar.gz -O /tmp/apache-jena-fuseki.tar.gz && \
+    mkdir -p ${FUSEKI_HOME} && \
+    tar -xzf /tmp/apache-jena-fuseki.tar.gz --strip-components=1 -C ${FUSEKI_HOME} && \
+    rm -f /tmp/apache-jena-fuseki.tar.gz
+
+# Jena commands
+RUN wget --quiet https://dlcdn.apache.org/jena/binaries/apache-jena-${JENA_VERSION}.tar.gz -O /tmp/apache-jena.tar.gz && \
+    mkdir -p ${JENA_HOME} && \
+    tar -xzf /tmp/apache-jena.tar.gz --strip-components=1 -C ${JENA_HOME} && \
+    rm -f /tmp/apache-jena.tar.gz
+
+ENV PATH="${JENA_HOME}/bin:${FUSEKI_HOME}:${PATH}"
+
+COPY shiro.ini ${FUSEKI_BASE}/shiro.ini
+COPY config.ttl ${FUSEKI_BASE}/config.ttl
 COPY compoundnaming.jar ${FUSEKI_HOME}/lib/compoundnaming.jar
-USER root
+COPY entrypoint.sh ${FUSEKI_HOME}/entrypoint.sh
+
+CMD ["/opt/fuseki/entrypoint.sh"]

@@ -96,8 +96,8 @@ fun getCompoundNameParts(
 
     val retValue = mutableSetOf<Quadruple<Node, Node, Node, Node>>()
     for (part in partsMap.values) {
-        val ids = NodeFactory.createLiteral(part.ids.map { NodeFmtLib.strNT(it) }.joinToString(","))
-        val types = NodeFactory.createLiteral(part.types.map { NodeFmtLib.strNT(it) }.joinToString(","))
+        val ids = NodeFactory.createLiteralString(part.ids.map { NodeFmtLib.strNT(it) }.joinToString(","))
+        val types = NodeFactory.createLiteralString(part.types.map { NodeFmtLib.strNT(it) }.joinToString(","))
         val valuePredicate = part.valuePredicate
         val value = part.value
         if (valuePredicate == null || value == null) {

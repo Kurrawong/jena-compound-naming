@@ -23,10 +23,10 @@ class getParts : PFuncSimpleAndList() {
             println("Initializing ai.kurrawong.jena.compoundnaming.getParts property function")
 
             // Register the property function with the IRI
-            val PROPERTY_FUNCTION_IRI = "https://linked.data.gov.au/def/cn/func/getParts"
-            val registry = PropertyFunctionRegistry.chooseRegistry(ARQ.getContext())
-            registry.put(PROPERTY_FUNCTION_IRI, GetPartsPropertyFunctionFactory())
-            PropertyFunctionRegistry.set(ARQ.getContext(), registry)
+            PropertyFunctionRegistry.get().put(
+                "https://linked.data.gov.au/def/cn/func/getParts",
+                GetPartsPropertyFunctionFactory(),
+            )
         }
     }
 
