@@ -138,7 +138,7 @@ PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
         schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/road>;
                                  schema:value           <https://linked.data.gov.au/dataset/qld-addr/road-label/QLDRGOL1534374428054953430>
                                ];
-        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/geographicName>;
+        schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/locality>;
                                  schema:value           <https://linked.data.gov.au/dataset/qld-addr/gn/50200>
                                ];
         schema:hasPart         [ schema:additionalType  <https://linked.data.gov.au/def/addr-part-types/stateOrTerritory>;

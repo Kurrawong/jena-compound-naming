@@ -10,7 +10,7 @@ import java.util.function.BiConsumer
 /**
  * A binding implementation that supports 5 binding pairs.
  */
-class Binding5 (
+class Binding5(
     parent: Binding?,
     var1: Var,
     value1: Node,
@@ -21,7 +21,7 @@ class Binding5 (
     var4: Var,
     value4: Node,
     var5: Var,
-    value5: Node
+    value5: Node,
 ) : BindingBase(parent) {
     private val var1: Var = Objects.requireNonNull(var1)
     private val value1: Node = Objects.requireNonNull(value1)
@@ -38,9 +38,7 @@ class Binding5 (
     private val var5: Var = Objects.requireNonNull(var5)
     private val value5: Node = Objects.requireNonNull(value5)
 
-    override fun vars1(): Iterator<Var> {
-        return Itr.iter5(var1, var2, var3, var4, var5)
-    }
+    override fun vars1(): Iterator<Var> = Itr.iter5(var1, var2, var3, var4, var5)
 
     override fun forEach1(action: BiConsumer<Var, Node>) {
         action.accept(var1, value1)
@@ -49,7 +47,6 @@ class Binding5 (
         action.accept(var4, value4)
         action.accept(var5, value5)
     }
-
 
     protected fun getVar1(idx: Int): Var? {
         if (idx == 0) return var1
@@ -69,9 +66,7 @@ class Binding5 (
         return 5
     }
 
-    override fun isEmpty1(): Boolean {
-        return var1 == null
-    }
+    override fun isEmpty1(): Boolean = var1 == null
 
     override fun contains1(`var`: Var): Boolean {
         if (`var` == null) return false

@@ -3,84 +3,108 @@ package ai.kurrawong.jena.compoundnaming
 import org.apache.jena.graph.Graph
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.riot.out.NodeFmtLib
+import org.apache.jena.vocabulary.RDFS
+import org.apache.jena.vocabulary.SKOS
+import org.apache.jena.vocabulary.SchemaDO
 
-val hasPart: Node = NodeFactory.createURI("https://schema.org/hasPart")
-val hasValue: Node = NodeFactory.createURI("https://schema.org/value")
-val sdoName: Node = NodeFactory.createURI("https://schema.org/name")
-val additionalType: Node = NodeFactory.createURI("https://schema.org/additionalType")
+data class Part(
+    val ids: MutableList<Node>,
+    val types: MutableList<Node>,
+    var valuePredicate: Node?,
+    var value: Node?,
+)
 
-class CompoundName(private val graph: Graph, private var topLevelParts: List<Node>) {
-    val data = mutableSetOf<Quadruple<Node, Node, Node, Node>>()
-    val partsQueue = topLevelParts.toMutableList()
+typealias PartsMap = MutableMap<String, Part>
 
-    init {
-        while (partsQueue.isNotEmpty()) {
-            val partNode = partsQueue.removeFirst()
+fun getCompoundNamePartsInner(
+    rootId: String,
+    focusNode: Node,
+    graph: Graph,
+    partsMap: PartsMap,
+) {
+    val sdoParts = graph.find(focusNode, SchemaDO.hasPart.asNode(), Node.ANY).toList().map { it.`object` }
+    if (sdoParts.isNotEmpty()) {
+        for ((i, partNode) in sdoParts.withIndex()) {
+            val index = i + 1
+            val newRootId = "$rootId.$index"
+            val part =
+                partsMap.getValue(rootId).copy(
+                    ids = partsMap.getValue(rootId).ids.toMutableList(),
+                    types = partsMap.getValue(rootId).types.toMutableList(),
+                )
 
-            val value = getComponentLiteral(partNode)
-            data.add(value)
-
-            if (partsQueue.isEmpty()) {
-                break
-            }
+            partsMap[newRootId] = part
+            getCompoundNamePartsInner(newRootId, partNode, graph, partsMap)
         }
+
+        partsMap.remove(rootId)
+        return
     }
 
-    /**
-     * Return a Quadruple data structure containing:
-     * - first - the component identifier - an IRI or internal system identifier as a blank node
-     * - second - the component type - an IRI
-     * - third - the component's predicate which contains the value
-     * - fourth - the component's value
-     */
-    private fun getComponentLiteral(focusNode: Node): Quadruple<Node, Node, Node, Node> {
-        val result = graph.find(focusNode, hasValue, Node.ANY).toList()
-        var sdoNames = graph.find(focusNode, sdoName, Node.ANY).toList().map { triple -> triple.`object` }
-        var hasParts = graph.find(focusNode, hasPart, Node.ANY).toList().map { triple -> triple.`object` }
+    val sdoValues = graph.find(focusNode, SchemaDO.value.asNode(), Node.ANY).toList().map { it.`object` }
+    if (sdoValues.isNotEmpty()) {
+        val value = sdoValues[0]
+        val partAdditionalType = graph.find(focusNode, SchemaDO.additionalType.asNode(), Node.ANY).toList()
+        val part = partsMap.getValue(rootId)
+        part.ids.add(focusNode)
+        part.types.add(partAdditionalType.map { it.`object` }.first())
+        partsMap[rootId] = part
 
-        if (hasParts.isNotEmpty()) {
-            val hasPartNode = hasParts[0]
-            if (hasParts.size > 1) {
-                hasParts = hasParts.drop(1)
-                partsQueue.addAll(hasParts)
-            }
-            return getComponentLiteral(hasPartNode)
+        if (value.isURI) {
+            getCompoundNamePartsInner(rootId, value, graph, partsMap)
+            return
         }
 
-        if (sdoNames.isNotEmpty()) {
-            val sdoNameNode = sdoNames[0]
-            if (sdoNames.size > 1) {
-                sdoNames = sdoNames.drop(1)
-                partsQueue.addAll(sdoNames)
-            }
-            return getComponentLiteral(sdoNameNode)
-        }
-
-        if (result.isEmpty()) {
-            throw Exception("Focus node $focusNode does not have any values for rdf:value.")
-        }
-
-        // Always get just one value. Multiple values found is undefined behaviour.
-        val value = result[0]
-
-        if (value.`object`.isURI) {
-            try {
-                return getComponentLiteral(value.`object`)
-            }
-            catch (_: Exception) {
-                // Catch the exception thrown when no rdf:value is found on value.object.
-                // Use this as the value instead.
-                // Applications using this function will need to check whether any componentValue values are IRIs and
-                // handle it by deriving the label for the object in some other way.
-            }
-        }
-
-        val componentTypes = graph.find(focusNode, additionalType, Node.ANY).toList()
-
-        if (componentTypes.isEmpty()) {
-            throw Exception("Focus node $focusNode does not have a component type.")
-        }
-
-        return Quadruple(value.subject, componentTypes[0].`object`,  value.predicate, value.`object`)
+        part.valuePredicate = SchemaDO.value.asNode()
+        part.value = value
+        return
     }
+
+    val skosPrefLabels = graph.find(focusNode, SKOS.prefLabel.asNode(), Node.ANY).toList().map { it.`object` }
+    if (skosPrefLabels.isNotEmpty()) {
+        val part = partsMap.getValue(rootId)
+        part.ids.add(focusNode)
+        part.valuePredicate = SKOS.prefLabel.asNode()
+        part.value = skosPrefLabels[0]
+        return
+    }
+
+    val rdfsLabels = graph.find(focusNode, RDFS.label.asNode(), Node.ANY).toList().map { it.`object` }
+    if (rdfsLabels.isNotEmpty()) {
+        val part = partsMap.getValue(rootId)
+        part.ids.add(focusNode)
+        part.valuePredicate = RDFS.label.asNode()
+        part.value = rdfsLabels[0]
+        return
+    }
+}
+
+fun getCompoundNameParts(
+    graph: Graph,
+    topLevelParts: List<Node>,
+): MutableSet<Quadruple<Node, Node, Node, Node>> {
+    val partsMap: PartsMap =
+        mutableMapOf<String, Part>().withDefault {
+            Part(mutableListOf(), mutableListOf(), null, null)
+        }
+
+    for ((index, partNode) in topLevelParts.withIndex()) {
+        val rootId = index.toString()
+        getCompoundNamePartsInner(rootId, partNode, graph, partsMap)
+    }
+
+    val retValue = mutableSetOf<Quadruple<Node, Node, Node, Node>>()
+    for (part in partsMap.values) {
+        val ids = NodeFactory.createLiteral(part.ids.map { NodeFmtLib.strNT(it) }.joinToString(","))
+        val types = NodeFactory.createLiteral(part.types.map { NodeFmtLib.strNT(it) }.joinToString(","))
+        val valuePredicate = part.valuePredicate
+        val value = part.value
+        if (valuePredicate == null || value == null) {
+            throw Exception("valuePredicate or value is null.")
+        }
+        retValue.add(Quadruple(ids, types, valuePredicate, value))
+    }
+
+    return retValue
 }

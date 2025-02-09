@@ -1,4 +1,5 @@
 FROM ghcr.io/zazuko/fuseki-geosparql:v3.3.0
 
-COPY compoundnaming.jar /opt/fuseki/compoundnaming.jar
-COPY entrypoint.sh /opt/fuseki/entrypoint.sh
+# COPY shiro.ini ${FUSEKI_BASE}/shiro.ini
+COPY compoundnaming.jar ${FUSEKI_HOME}/lib/compoundnaming.jar
+USER root
