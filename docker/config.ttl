@@ -30,4 +30,5 @@ PREFIX text:      <http://jena.apache.org/text#>
    # Add any custom classes you want to load.
    # Must have a "public static void init()" method.
 
+   ja:loadClass "ai.kurrawong.jena.compoundnaming.getParts" ;
 .
