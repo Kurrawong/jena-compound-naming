@@ -1,9 +1,9 @@
 package ai.kurrawong.jena.compoundnaming
 
-import org.apache.jena.graph.Graph
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.riot.out.NodeFmtLib
+import org.apache.jena.sparql.core.DatasetGraph
 import org.apache.jena.vocabulary.RDFS
 import org.apache.jena.vocabulary.SKOS
 import org.apache.jena.vocabulary.SchemaDO
@@ -20,10 +20,15 @@ typealias PartsMap = MutableMap<String, Part>
 fun getCompoundNamePartsInner(
     rootId: String,
     focusNode: Node,
-    graph: Graph,
+    dataset: DatasetGraph,
     partsMap: PartsMap,
 ) {
-    val sdoParts = graph.find(focusNode, SchemaDO.hasPart.asNode(), Node.ANY).toList().map { it.`object` }
+    val sdoParts =
+        dataset
+            .find(Node.ANY, focusNode, SchemaDO.hasPart.asNode(), Node.ANY)
+            .asSequence()
+            .toList()
+            .map { it.`object` }
     if (sdoParts.isNotEmpty()) {
         for ((i, partNode) in sdoParts.withIndex()) {
             val index = i + 1
@@ -35,24 +40,29 @@ fun getCompoundNamePartsInner(
                 )
 
             partsMap[newRootId] = part
-            getCompoundNamePartsInner(newRootId, partNode, graph, partsMap)
+            getCompoundNamePartsInner(newRootId, partNode, dataset, partsMap)
         }
 
         partsMap.remove(rootId)
         return
     }
 
-    val sdoValues = graph.find(focusNode, SchemaDO.value.asNode(), Node.ANY).toList().map { it.`object` }
+    val sdoValues =
+        dataset
+            .find(Node.ANY, focusNode, SchemaDO.value.asNode(), Node.ANY)
+            .asSequence()
+            .toList()
+            .map { it.`object` }
     if (sdoValues.isNotEmpty()) {
         val value = sdoValues[0]
-        val partAdditionalType = graph.find(focusNode, SchemaDO.additionalType.asNode(), Node.ANY).toList()
+        val partAdditionalType = dataset.find(Node.ANY, focusNode, SchemaDO.additionalType.asNode(), Node.ANY).asSequence().toList()
         val part = partsMap.getValue(rootId)
         part.ids.add(focusNode)
         part.types.add(partAdditionalType.map { it.`object` }.first())
         partsMap[rootId] = part
 
         if (value.isURI) {
-            getCompoundNamePartsInner(rootId, value, graph, partsMap)
+            getCompoundNamePartsInner(rootId, value, dataset, partsMap)
             return
         }
 
@@ -61,7 +71,12 @@ fun getCompoundNamePartsInner(
         return
     }
 
-    val skosPrefLabels = graph.find(focusNode, SKOS.prefLabel.asNode(), Node.ANY).toList().map { it.`object` }
+    val skosPrefLabels =
+        dataset
+            .find(Node.ANY, focusNode, SKOS.prefLabel.asNode(), Node.ANY)
+            .asSequence()
+            .toList()
+            .map { it.`object` }
     if (skosPrefLabels.isNotEmpty()) {
         val part = partsMap.getValue(rootId)
         part.ids.add(focusNode)
@@ -70,7 +85,12 @@ fun getCompoundNamePartsInner(
         return
     }
 
-    val rdfsLabels = graph.find(focusNode, RDFS.label.asNode(), Node.ANY).toList().map { it.`object` }
+    val rdfsLabels =
+        dataset
+            .find(Node.ANY, focusNode, RDFS.label.asNode(), Node.ANY)
+            .asSequence()
+            .toList()
+            .map { it.`object` }
     if (rdfsLabels.isNotEmpty()) {
         val part = partsMap.getValue(rootId)
         part.ids.add(focusNode)
@@ -86,7 +106,7 @@ fun getCompoundNamePartsInner(
 }
 
 fun getCompoundNameParts(
-    graph: Graph,
+    dataset: DatasetGraph,
     topLevelParts: List<Node>,
 ): MutableSet<Quadruple<Node, Node, Node, Node>> {
     val partsMap: PartsMap =
@@ -96,7 +116,7 @@ fun getCompoundNameParts(
 
     for ((index, partNode) in topLevelParts.withIndex()) {
         val rootId = index.toString()
-        getCompoundNamePartsInner(rootId, partNode, graph, partsMap)
+        getCompoundNamePartsInner(rootId, partNode, dataset, partsMap)
     }
 
     val retValue = mutableSetOf<Quadruple<Node, Node, Node, Node>>()

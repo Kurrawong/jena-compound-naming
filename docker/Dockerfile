@@ -12,11 +12,12 @@ ARG JENA_VERSION
 ARG JENA_HOME
 ARG FUSEKI_HOME
 ENV JENA_BUILD_DIR="/tmp/jena-build"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN apt-get update && \
     apt-get install -y \
         bash \
-        curl \ 
+        curl \
         wget
 
 # Install Node.js and build dependencies

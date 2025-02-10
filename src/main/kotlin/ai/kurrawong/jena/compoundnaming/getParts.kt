@@ -59,8 +59,9 @@ class getParts : PFuncSimpleAndList() {
         }
 
         val graph = execCxt.activeGraph
+        val dataset = execCxt.dataset
         val topLevelParts = graph.find(subject, SchemaDO.hasPart.asNode(), Node.ANY).toList().map { it.`object` }
-        val parts = getCompoundNameParts(graph, topLevelParts)
+        val parts = getCompoundNameParts(dataset, topLevelParts)
 
         var subjectVar: Var? = null
         val vars = binding.vars()
