@@ -3,7 +3,10 @@
  */
 import ai.kurrawong.jena.compoundnaming.GetPartsPropertyFunctionFactory
 import ai.kurrawong.jena.compoundnaming.loadModelFromResource
-import org.apache.jena.query.*
+import org.apache.jena.query.DatasetFactory
+import org.apache.jena.query.QueryExecutionFactory
+import org.apache.jena.query.QueryFactory
+import org.apache.jena.query.ResultSetFormatter
 import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry
 
 fun main() {

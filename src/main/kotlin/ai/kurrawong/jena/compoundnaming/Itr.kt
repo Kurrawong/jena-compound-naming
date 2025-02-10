@@ -1,6 +1,6 @@
 package ai.kurrawong.jena.compoundnaming
 
-import java.util.*
+import java.util.Objects
 
 /** Iterator of 0 objects  */
 class Itr0<X> : Iterator<X> {

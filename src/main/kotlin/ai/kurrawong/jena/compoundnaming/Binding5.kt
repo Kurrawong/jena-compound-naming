@@ -4,7 +4,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.engine.binding.BindingBase
-import java.util.*
+import java.util.Objects
 import java.util.function.BiConsumer
 
 /**

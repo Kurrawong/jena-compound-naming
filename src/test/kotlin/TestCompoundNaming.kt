@@ -38,7 +38,7 @@ class TestCompoundNaming {
                         "<https://linked.data.gov.au/def/addr-part-types/road>,<https://linked.data.gov.au/def/road-name-part-types/RoadType>",
                     ),
                     NodeFactory.createURI("http://www.w3.org/2004/02/skos/core#prefLabel"),
-                    NodeFactory.createLiteralString("Highway"),
+                    NodeFactory.createLiteralLang("Highway", "en"),
                 ),
                 Quadruple(
                     NodeFactory.createLiteralString(""),
@@ -46,9 +46,21 @@ class TestCompoundNaming {
                         "<https://linked.data.gov.au/def/addr-part-types/road>,<https://linked.data.gov.au/def/road-name-part-types/RoadSuffix>",
                     ),
                     NodeFactory.createURI("http://www.w3.org/2004/02/skos/core#prefLabel"),
-                    NodeFactory.createLiteralString("East"),
+                    NodeFactory.createLiteralLang("East", "en"),
+                ),
+                Quadruple(
+                    NodeFactory.createLiteralString(""),
+                    NodeFactory.createLiteralString("<https://linked.data.gov.au/def/addr-part-types/subaddressType>"),
+                    NodeFactory.createURI("http://www.w3.org/2004/02/skos/core#prefLabel"),
+                    NodeFactory.createLiteralLang("Unit", "en"),
+                ),
+                Quadruple(
+                    NodeFactory.createLiteralString(""),
+                    NodeFactory.createLiteralString("<https://linked.data.gov.au/def/addr-part-types/buildingLevelNumber>"),
+                    NodeFactory.createURI("https://schema.org/value"),
+                    NodeFactory.createLiteralString("2"),
                 ),
             )
-        assertTrue(modifiedParts.containsAll(testSet))
+        assertTrue(modifiedParts.containsAll(testSet), "modifiedParts: $modifiedParts\ntestSet: $testSet")
     }
 }

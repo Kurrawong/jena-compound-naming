@@ -6,6 +6,11 @@ tasks:
   default:
     cmd: task -a
 
+  format:
+    cmds:
+      - ktlint --format
+    ignore_error: true
+
   build:
     cmds:
       - ./gradlew clean

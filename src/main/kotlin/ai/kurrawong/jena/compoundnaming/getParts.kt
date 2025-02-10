@@ -6,7 +6,9 @@ import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.QueryIterator
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper
-import org.apache.jena.sparql.pfunction.*
+import org.apache.jena.sparql.pfunction.PFuncSimpleAndList
+import org.apache.jena.sparql.pfunction.PropFuncArg
+import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry
 import org.apache.jena.vocabulary.SchemaDO
 
 /**
