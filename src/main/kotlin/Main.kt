@@ -17,9 +17,7 @@ fun main() {
 
     val dataset = DatasetFactory.createTxnMem()
     val model = loadModelFromResource("data.ttl")
-    val model2 = loadModelFromResource("data2.ttl")
     dataset.addNamedModel("urn:graph:address", model)
-    dataset.addNamedModel("urn:graph:address2", model2)
 
     val queryString =
         """
