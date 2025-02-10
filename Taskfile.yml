@@ -1,0 +1,34 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  default:
+    cmd: task -a
+
+  format:
+    cmds:
+      - ktlint --format
+    ignore_error: true
+
+  build:
+    cmds:
+      - ./gradlew clean
+      - ./gradlew uberJar
+
+  docker:build:
+    cmds:
+      - cp build/libs/*.jar docker/compoundnaming.jar
+      - docker compose -f docker/docker-compose.yml build
+
+  docker:up:
+    cmds:
+      - docker compose -f docker/docker-compose.yml up -d
+
+  docker:down:
+    cmds:
+      - docker compose -f docker/docker-compose.yml down
+
+  docker:clean:
+    cmds:
+      - docker compose -f docker/docker-compose.yml down -v

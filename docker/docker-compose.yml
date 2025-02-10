@@ -5,7 +5,6 @@ services:
       context: .
     volumes:
       - fuseki_data:/fuseki
-      - ./config.ttl:/fuseki/config.ttl
     ports:
       - 3030:3030
 
