@@ -27,12 +27,11 @@ PREFIX sdo: <https://schema.org/>
 SELECT *
 WHERE {
     GRAPH ?graph {
-        # BIND(<https://linked.data.gov.au/dataset/qld-addr/addr-2522774> AS ?iri)
         BIND(<https://linked.data.gov.au/dataset/qld-addr/address/e37309a2-3916-506e-b334-30ebb444c213> AS ?iri)
-        ?iri cnf:getParts (?partId ?partType ?partValuePredicate ?partValue) .
+        ?iri cnf:getParts (?partIds ?partTypes ?partValuePredicate ?partValue) .
     }
 }
-limit 10
+limit 100
         """.trimIndent()
 
     val query = QueryFactory.create(queryString)
