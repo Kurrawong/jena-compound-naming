@@ -10,6 +10,8 @@ Given a subject that's a `cn:CompoundName`, recursively retrieve all of its part
 
 Where part identifiers are blank nodes, the internal Jena system identifier is returned. This can be used in tandem with RDF Delta Patch logs to provide updates to blank node objects.
 
+The following example executes the SPARQL query on the data file [src/test/resources/test.ttl](src/test/resources/test.ttl).
+
 ```sparql
 PREFIX cnf: <https://linked.data.gov.au/def/cn/func/>
 PREFIX sdo: <https://schema.org/>
