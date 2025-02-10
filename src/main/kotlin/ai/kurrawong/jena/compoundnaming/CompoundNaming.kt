@@ -78,6 +78,11 @@ fun getCompoundNamePartsInner(
         part.value = rdfsLabels[0]
         return
     }
+
+    // Reaching here means we didn't find a value. Save the value as the focus node instead.
+    val part = partsMap.getValue(rootId)
+    part.valuePredicate = NodeFactory.createLiteralString("")
+    part.value = focusNode
 }
 
 fun getCompoundNameParts(
