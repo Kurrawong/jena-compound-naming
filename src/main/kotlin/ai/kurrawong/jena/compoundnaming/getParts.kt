@@ -1,7 +1,6 @@
 package ai.kurrawong.jena.compoundnaming
 
 import org.apache.jena.graph.Node
-import org.apache.jena.query.ARQ
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.QueryIterator
