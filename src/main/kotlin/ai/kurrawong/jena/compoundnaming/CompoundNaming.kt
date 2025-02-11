@@ -9,6 +9,7 @@ import org.apache.jena.vocabulary.SKOS
 import org.apache.jena.vocabulary.SchemaDO
 
 data class Part(
+    var rootNode: Node?,
     val ids: MutableList<Node>,
     val types: MutableList<Node>,
     var valuePredicate: Node?,
@@ -19,6 +20,7 @@ typealias PartsMap = MutableMap<String, Part>
 
 fun getCompoundNamePartsInner(
     rootId: String,
+    rootNode: Node,
     focusNode: Node,
     dataset: DatasetGraph,
     partsMap: PartsMap,
@@ -35,12 +37,13 @@ fun getCompoundNamePartsInner(
             val newRootId = "$rootId.$index"
             val part =
                 partsMap.getValue(rootId).copy(
+                    rootNode = partsMap.getValue(rootId).rootNode,
                     ids = partsMap.getValue(rootId).ids.toMutableList(),
                     types = partsMap.getValue(rootId).types.toMutableList(),
                 )
 
             partsMap[newRootId] = part
-            getCompoundNamePartsInner(newRootId, partNode, dataset, partsMap)
+            getCompoundNamePartsInner(newRootId, rootNode, partNode, dataset, partsMap)
         }
 
         partsMap.remove(rootId)
@@ -57,12 +60,13 @@ fun getCompoundNamePartsInner(
         val value = sdoValues[0]
         val partAdditionalType = dataset.find(Node.ANY, focusNode, SchemaDO.additionalType.asNode(), Node.ANY).asSequence().toList()
         val part = partsMap.getValue(rootId)
+        part.rootNode = rootNode
         part.ids.add(focusNode)
         part.types.add(partAdditionalType.map { it.`object` }.first())
         partsMap[rootId] = part
 
         if (value.isURI) {
-            getCompoundNamePartsInner(rootId, value, dataset, partsMap)
+            getCompoundNamePartsInner(rootId, rootNode, value, dataset, partsMap)
             return
         }
 
@@ -79,6 +83,7 @@ fun getCompoundNamePartsInner(
             .map { it.`object` }
     if (skosPrefLabels.isNotEmpty()) {
         val part = partsMap.getValue(rootId)
+        part.rootNode = rootNode
         part.ids.add(focusNode)
         part.valuePredicate = SKOS.prefLabel.asNode()
         part.value = skosPrefLabels[0]
@@ -93,6 +98,7 @@ fun getCompoundNamePartsInner(
             .map { it.`object` }
     if (rdfsLabels.isNotEmpty()) {
         val part = partsMap.getValue(rootId)
+        part.rootNode = rootNode
         part.ids.add(focusNode)
         part.valuePredicate = RDFS.label.asNode()
         part.value = rdfsLabels[0]
@@ -101,26 +107,28 @@ fun getCompoundNamePartsInner(
 
     // Reaching here means we didn't find a value. Save the value as the focus node instead.
     val part = partsMap.getValue(rootId)
+    part.rootNode = rootNode
     part.valuePredicate = NodeFactory.createLiteralString("")
     part.value = focusNode
 }
 
 fun getCompoundNameParts(
     dataset: DatasetGraph,
-    topLevelParts: List<Node>,
-): MutableSet<Quadruple<Node, Node, Node, Node>> {
+    topLevelParts: List<Pair<Node, Node>>,
+): MutableSet<Quintuple<Node, Node, Node, Node, Node>> {
     val partsMap: PartsMap =
         mutableMapOf<String, Part>().withDefault {
-            Part(mutableListOf(), mutableListOf(), null, null)
+            Part(null, mutableListOf(), mutableListOf(), null, null)
         }
 
-    for ((index, partNode) in topLevelParts.withIndex()) {
+    for ((index, partPair) in topLevelParts.withIndex()) {
         val rootId = index.toString()
-        getCompoundNamePartsInner(rootId, partNode, dataset, partsMap)
+        getCompoundNamePartsInner(rootId, partPair.first, partPair.second, dataset, partsMap)
     }
 
-    val retValue = mutableSetOf<Quadruple<Node, Node, Node, Node>>()
+    val retValue = mutableSetOf<Quintuple<Node, Node, Node, Node, Node>>()
     for (part in partsMap.values) {
+        val rootNode = part.rootNode ?: throw Exception("rootNode is null.")
         val ids = NodeFactory.createLiteralString(part.ids.map { NodeFmtLib.strNT(it) }.joinToString(","))
         val types = NodeFactory.createLiteralString(part.types.map { NodeFmtLib.strNT(it) }.joinToString(","))
         val valuePredicate = part.valuePredicate
@@ -128,7 +136,7 @@ fun getCompoundNameParts(
         if (valuePredicate == null || value == null) {
             throw Exception("valuePredicate or value is null.")
         }
-        retValue.add(Quadruple(ids, types, valuePredicate, value))
+        retValue.add(Quintuple(rootNode, ids, types, valuePredicate, value))
     }
 
     return retValue

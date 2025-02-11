@@ -58,11 +58,6 @@ class getParts : PFuncSimpleAndList() {
             throw Exception("The binding is null.")
         }
 
-        val graph = execCxt.activeGraph
-        val dataset = execCxt.dataset
-        val topLevelParts = graph.find(subject, SchemaDO.hasPart.asNode(), Node.ANY).toList().map { it.`object` }
-        val parts = getCompoundNameParts(dataset, topLevelParts)
-
         var subjectVar: Var? = null
         val vars = binding.vars()
         if (vars != null) {
@@ -70,25 +65,41 @@ class getParts : PFuncSimpleAndList() {
                 subjectVar = vars.next()
             }
         }
-        if (subjectVar == null) {
-            throw Exception("The subject variable is null.")
-        }
 
+        val graph = execCxt.activeGraph
+        val dataset = execCxt.dataset
+        val topLevelParts =
+            graph
+                .find(
+                    if (subjectVar !=
+                        null
+                    ) {
+                        subject
+                    } else {
+                        Node.ANY
+                    },
+                    SchemaDO.hasPart.asNode(),
+                    Node.ANY,
+                ).toList()
+                .map { Pair(it.subject, it.`object`) }
+        val parts = getCompoundNameParts(dataset, topLevelParts)
+
+        subjectVar = subjectVar ?: (subject as? Var)
         val bindings = mutableListOf<Binding>()
         for (part in parts) {
             val rowBinding =
                 Binding5(
                     binding,
                     Var.alloc(subjectVar),
-                    binding.get(subjectVar),
+                    binding.get(subjectVar) ?: part.first,
                     Var.alloc(`object`?.getArg(0)?.name),
-                    part.first,
-                    Var.alloc(`object`?.getArg(1)?.name),
                     part.second,
-                    Var.alloc(`object`?.getArg(2)?.name),
+                    Var.alloc(`object`?.getArg(1)?.name),
                     part.third,
-                    Var.alloc(`object`?.getArg(3)?.name),
+                    Var.alloc(`object`?.getArg(2)?.name),
                     part.fourth,
+                    Var.alloc(`object`?.getArg(3)?.name),
+                    part.fifth,
                 )
             bindings.add(rowBinding)
         }
