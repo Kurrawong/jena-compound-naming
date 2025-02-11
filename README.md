@@ -47,7 +47,7 @@ And get the following result.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
-- `iri` - the top-level compound name.
+- `iri` - the top-level compound name. This is tied to the scope of the graph in the query. Note that the individual parts look through the entire dataset.
 - `partIds` - the path of each resource's identifier to the leaf node.
 - `partTypes` - the path of each resource's part type to the leaf node.
 - `partValuePredicate` - the predicate of the leaf node value.
