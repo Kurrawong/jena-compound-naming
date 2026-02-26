@@ -5,6 +5,8 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.QueryIterator
 import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.sparql.engine.binding.BindingBuilder
+import org.apache.jena.sparql.engine.binding.BindingFactory
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper
 import org.apache.jena.sparql.pfunction.PFuncSimpleAndList
 import org.apache.jena.sparql.pfunction.PropFuncArg
@@ -18,6 +20,28 @@ import org.apache.jena.vocabulary.SchemaDO
  *      ?iri <https://linked.data.gov.au/def/cn/func/getParts> (?partId ?partType ?partValuePredicate ?partValue) .
  */
 class getParts : PFuncSimpleAndList() {
+    private fun bindOrMatch(
+        builder: BindingBuilder,
+        target: Node?,
+        value: Node,
+    ): Boolean {
+        if (target == null) {
+            return false
+        }
+
+        if (target.isVariable) {
+            val variable = Var.alloc(target)
+            val existing = builder.get(variable)
+            if (existing == null) {
+                builder.add(variable, value)
+                return true
+            }
+            return existing == value
+        }
+
+        return target == value
+    }
+
     companion object {
         @JvmStatic
         fun init() {
@@ -85,23 +109,43 @@ class getParts : PFuncSimpleAndList() {
         val parts = getCompoundNameParts(dataset, topLevelParts)
 
         subjectVar = subjectVar ?: (subject as? Var)
+        val objectArgs =
+            listOf(
+                `object`?.getArg(0),
+                `object`?.getArg(1),
+                `object`?.getArg(2),
+                `object`?.getArg(3),
+            )
+        if (objectArgs.any { it == null }) {
+            throw Exception("A call to function ai.kurrawong.jena.compoundnaming.getParts must contain 4 arguments.")
+        }
+
         val bindings = mutableListOf<Binding>()
         for (part in parts) {
-            val rowBinding =
-                Binding5(
-                    binding,
-                    Var.alloc(subjectVar),
-                    binding.get(subjectVar) ?: part.first,
-                    Var.alloc(`object`?.getArg(0)?.name),
-                    part.second,
-                    Var.alloc(`object`?.getArg(1)?.name),
-                    part.third,
-                    Var.alloc(`object`?.getArg(2)?.name),
-                    part.fourth,
-                    Var.alloc(`object`?.getArg(3)?.name),
-                    part.fifth,
-                )
-            bindings.add(rowBinding)
+            val rowBuilder = BindingFactory.builder(binding)
+            var isCompatible = true
+
+            if (subjectVar != null) {
+                val subjectValue = binding.get(subjectVar) ?: part.first
+                isCompatible = bindOrMatch(rowBuilder, subjectVar, subjectValue)
+            }
+
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[0], part.second)
+            }
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[1], part.third)
+            }
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[2], part.fourth)
+            }
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[3], part.fifth)
+            }
+
+            if (isCompatible) {
+                bindings.add(rowBuilder.build())
+            }
         }
 
         return QueryIterPlainWrapper.create(bindings.iterator(), execCxt)

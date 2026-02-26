@@ -3,6 +3,8 @@ import ai.kurrawong.jena.compoundnaming.getCompoundNameParts
 import ai.kurrawong.jena.compoundnaming.loadModelFromResource
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.graph.Triple
+import org.apache.jena.vocabulary.RDF
 import org.apache.jena.sparql.core.DatasetGraphFactory
 import org.apache.jena.vocabulary.SchemaDO
 import kotlin.test.Test
@@ -78,5 +80,27 @@ class TestCompoundNaming {
                 ),
             )
         assertTrue(modifiedParts.containsAll(testSet), "modifiedParts: $modifiedParts\ntestSet: $testSet")
+    }
+
+    @Test
+    fun `fallback uses focus node when no value predicate is found`() {
+        val subject = NodeFactory.createURI("https://example.org/name")
+        val part = NodeFactory.createBlankNode()
+        val fallbackValue = NodeFactory.createURI("https://example.org/no-label-or-value")
+        val partType = NodeFactory.createURI("https://example.org/type")
+
+        val model = loadModelFromResource("test.ttl").removeAll()
+        model.graph.add(Triple.create(subject, RDF.type.asNode(), NodeFactory.createURI("https://linked.data.gov.au/def/cn/CompoundName")))
+        model.graph.add(Triple.create(subject, SchemaDO.hasPart.asNode(), part))
+        model.graph.add(Triple.create(part, SchemaDO.additionalType.asNode(), partType))
+        model.graph.add(Triple.create(part, SchemaDO.value.asNode(), fallbackValue))
+
+        val topLevelParts = listOf(Pair(subject, part))
+        val parts = getCompoundNameParts(DatasetGraphFactory.wrap(model.graph), topLevelParts)
+
+        assertEquals(1, parts.size)
+        val only = parts.first()
+        assertEquals(NodeFactory.createLiteralString(""), only.fourth)
+        assertEquals(fallbackValue, only.fifth)
     }
 }
