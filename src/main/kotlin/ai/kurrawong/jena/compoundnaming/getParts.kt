@@ -43,8 +43,12 @@ class getParts : PFuncSimpleAndList() {
     }
 
     companion object {
-        @JvmStatic
-        fun init() {
+        private var registered = false
+
+        private fun register() {
+            if (registered) {
+                return
+            }
             println("Initializing ai.kurrawong.jena.compoundnaming.getParts property function")
 
             // Register the property function with the IRI
@@ -52,6 +56,16 @@ class getParts : PFuncSimpleAndList() {
                 "https://linked.data.gov.au/def/cn/func/getParts",
                 GetPartsPropertyFunctionFactory(),
             )
+            registered = true
+        }
+
+        init {
+            register()
+        }
+
+        @JvmStatic
+        fun init() {
+            register()
         }
     }
 
@@ -82,33 +96,24 @@ class getParts : PFuncSimpleAndList() {
             throw Exception("The binding is null.")
         }
 
-        var subjectVar: Var? = null
-        val vars = binding.vars()
-        if (vars != null) {
-            while (vars.hasNext()) {
-                subjectVar = vars.next()
-            }
-        }
-
         val graph = execCxt.activeGraph
         val dataset = execCxt.dataset
+        val subjectSearchNode =
+            when {
+                subject == null -> Node.ANY
+                subject.isVariable -> binding.get(Var.alloc(subject)) ?: Node.ANY
+                else -> subject
+            }
         val topLevelParts =
             graph
                 .find(
-                    if (subjectVar !=
-                        null
-                    ) {
-                        subject
-                    } else {
-                        Node.ANY
-                    },
+                    subjectSearchNode,
                     SchemaDO.hasPart.asNode(),
                     Node.ANY,
                 ).toList()
                 .map { Pair(it.subject, it.`object`) }
         val parts = getCompoundNameParts(dataset, topLevelParts)
 
-        subjectVar = subjectVar ?: (subject as? Var)
         val objectArgs =
             listOf(
                 `object`?.getArg(0),
@@ -125,9 +130,8 @@ class getParts : PFuncSimpleAndList() {
             val rowBuilder = BindingFactory.builder(binding)
             var isCompatible = true
 
-            if (subjectVar != null) {
-                val subjectValue = binding.get(subjectVar) ?: part.first
-                isCompatible = bindOrMatch(rowBuilder, subjectVar, subjectValue)
+            if (subject != null) {
+                isCompatible = bindOrMatch(rowBuilder, subject, part.first)
             }
 
             if (isCompatible) {
