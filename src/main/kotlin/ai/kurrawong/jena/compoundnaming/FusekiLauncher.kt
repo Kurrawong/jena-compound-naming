@@ -8,7 +8,7 @@ fun main(args: Array<String>) {
 
     val fusekiMain =
         Class
-            .forName("org.apache.jena.fuseki.cmd.FusekiCmd")
+            .forName("org.apache.jena.fuseki.main.cmds.FusekiServerCmd")
             .getMethod("main", Array<String>::class.java)
     fusekiMain.invoke(null, args)
 }
