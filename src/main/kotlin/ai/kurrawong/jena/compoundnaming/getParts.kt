@@ -59,10 +59,6 @@ class getParts : PFuncSimpleAndList() {
             registered = true
         }
 
-        init {
-            register()
-        }
-
         @JvmStatic
         fun init() {
             register()

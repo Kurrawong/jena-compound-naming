@@ -11,8 +11,7 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix sdo: <https://schema.org/> .
 
-[] rdf:type fuseki:Server ;
-   ja:loadClass "ai.kurrawong.jena.compoundnaming.getParts" .
+[] rdf:type fuseki:Server .
 
 :service_tdb_all  rdf:type  fuseki:Service;
         rdfs:label       "TDB2 Dataset";
