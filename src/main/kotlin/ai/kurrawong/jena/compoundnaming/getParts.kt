@@ -59,6 +59,11 @@ class getParts : PFuncSimpleAndList() {
             registered = true
         }
 
+        // Fuseki assembers load this class via ja:loadClass, so register on class load.
+        init {
+            register()
+        }
+
         @JvmStatic
         fun init() {
             register()
