@@ -41,6 +41,7 @@ tasks:
         curl --retry 5 --retry-delay 1 --retry-connrefused -fsS -X PUT -H 'Content-Type: text/turtle' --data-binary @src/test/resources/test.ttl 'http://localhost:3030/test/data'
 
   docker:test:
+    desc: a docker smoke test
     cmds:
       - |
         set -euo pipefail
