@@ -1,8 +1,9 @@
-import ai.kurrawong.jena.compoundnaming.Quadruple
+import ai.kurrawong.jena.compoundnaming.Quintuple
 import ai.kurrawong.jena.compoundnaming.getCompoundNameParts
 import ai.kurrawong.jena.compoundnaming.loadModelFromResource
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.sparql.core.DatasetGraphFactory
 import org.apache.jena.vocabulary.SchemaDO
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,14 +18,25 @@ class TestCompoundNaming {
             model.graph
                 .find(subject, SchemaDO.hasPart.asNode(), Node.ANY)
                 .toList()
-                .map { it.`object` }
-        val parts = getCompoundNameParts(model.graph, topLevelParts)
+                .map { Pair(it.subject, it.`object`) }
+        val parts = getCompoundNameParts(DatasetGraphFactory.wrap(model.graph), topLevelParts)
         assertEquals(12, parts.size)
 
-        val modifiedParts = parts.map { it.copy(NodeFactory.createLiteralString(""), it.second, it.third, it.fourth) }.toSet()
+        val modifiedParts =
+            parts
+                .map {
+                    Quintuple(
+                        NodeFactory.createLiteralString(""),
+                        NodeFactory.createLiteralString(""),
+                        it.third,
+                        it.fourth,
+                        it.fifth,
+                    )
+                }.toSet()
         val testSet =
             setOf(
-                Quadruple(
+                Quintuple(
+                    NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(
                         "<https://linked.data.gov.au/def/addr-part-types/road>,<https://linked.data.gov.au/def/road-name-part-types/RoadGivenName>",
@@ -32,7 +44,8 @@ class TestCompoundNaming {
                     NodeFactory.createURI("https://schema.org/value"),
                     NodeFactory.createLiteralString("Gold Coast"),
                 ),
-                Quadruple(
+                Quintuple(
+                    NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(
                         "<https://linked.data.gov.au/def/addr-part-types/road>,<https://linked.data.gov.au/def/road-name-part-types/RoadType>",
@@ -40,7 +53,8 @@ class TestCompoundNaming {
                     NodeFactory.createURI("http://www.w3.org/2004/02/skos/core#prefLabel"),
                     NodeFactory.createLiteralLang("Highway", "en"),
                 ),
-                Quadruple(
+                Quintuple(
+                    NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(
                         "<https://linked.data.gov.au/def/addr-part-types/road>,<https://linked.data.gov.au/def/road-name-part-types/RoadSuffix>",
@@ -48,13 +62,15 @@ class TestCompoundNaming {
                     NodeFactory.createURI("http://www.w3.org/2004/02/skos/core#prefLabel"),
                     NodeFactory.createLiteralLang("East", "en"),
                 ),
-                Quadruple(
+                Quintuple(
+                    NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString("<https://linked.data.gov.au/def/addr-part-types/subaddressType>"),
                     NodeFactory.createURI("http://www.w3.org/2004/02/skos/core#prefLabel"),
                     NodeFactory.createLiteralLang("Unit", "en"),
                 ),
-                Quadruple(
+                Quintuple(
+                    NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString(""),
                     NodeFactory.createLiteralString("<https://linked.data.gov.au/def/addr-part-types/buildingLevelNumber>"),
                     NodeFactory.createURI("https://schema.org/value"),
