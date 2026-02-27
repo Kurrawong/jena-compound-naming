@@ -24,6 +24,10 @@ tasks:
       - ./gradlew clean
       - ./gradlew uberJar
 
+  tests:
+    desc: run gradle tests
+    cmd: ./gradlew test
+
   docker:base:build:
     desc: build temporary local Fuseki 6.0.0 base image from https://github.com/Kurrawong/fuseki-container-image/pull/11
     cmd: FUSEKI_CONTAINER_IMAGE_REPO="{{.FUSEKI_CONTAINER_IMAGE_REPO}}" FUSEKI_CONTAINER_IMAGE_PR_REF="{{.FUSEKI_CONTAINER_IMAGE_PR_REF}}" FUSEKI_CONTAINER_IMAGE_DIR="{{.FUSEKI_CONTAINER_IMAGE_DIR}}" FUSEKI_BASE_IMAGE_TAG="{{.FUSEKI_BASE_IMAGE_TAG}}" ./scripts/docker-base-build.sh

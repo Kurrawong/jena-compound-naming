@@ -23,5 +23,8 @@ jobs:
 
       - uses: go-task/setup-task@v1
 
+      - name: Run Kotlin tests
+        run: task tests
+
       - name: Run smoke test
         run: task docker:test
