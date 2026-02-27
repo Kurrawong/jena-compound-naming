@@ -4,8 +4,8 @@ val kotlinxSerializationJsonVersion: String by project
 val jenaVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.8.21"
-    kotlin("plugin.serialization") version "1.8.21"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.serialization") version "1.9.25"
     application
 }
 
@@ -43,7 +43,7 @@ tasks.register<Jar>("uberJar") {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 application {

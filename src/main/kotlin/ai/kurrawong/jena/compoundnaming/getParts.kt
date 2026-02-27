@@ -5,6 +5,8 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.QueryIterator
 import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.sparql.engine.binding.BindingBuilder
+import org.apache.jena.sparql.engine.binding.BindingFactory
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper
 import org.apache.jena.sparql.pfunction.PFuncSimpleAndList
 import org.apache.jena.sparql.pfunction.PropFuncArg
@@ -18,9 +20,35 @@ import org.apache.jena.vocabulary.SchemaDO
  *      ?iri <https://linked.data.gov.au/def/cn/func/getParts> (?partId ?partType ?partValuePredicate ?partValue) .
  */
 class getParts : PFuncSimpleAndList() {
+    private fun bindOrMatch(
+        builder: BindingBuilder,
+        target: Node?,
+        value: Node,
+    ): Boolean {
+        if (target == null) {
+            return false
+        }
+
+        if (target.isVariable) {
+            val variable = Var.alloc(target)
+            val existing = builder.get(variable)
+            if (existing == null) {
+                builder.add(variable, value)
+                return true
+            }
+            return existing == value
+        }
+
+        return target == value
+    }
+
     companion object {
-        @JvmStatic
-        fun init() {
+        private var registered = false
+
+        private fun register() {
+            if (registered) {
+                return
+            }
             println("Initializing ai.kurrawong.jena.compoundnaming.getParts property function")
 
             // Register the property function with the IRI
@@ -28,6 +56,17 @@ class getParts : PFuncSimpleAndList() {
                 "https://linked.data.gov.au/def/cn/func/getParts",
                 GetPartsPropertyFunctionFactory(),
             )
+            registered = true
+        }
+
+        // Fuseki assembers load this class via ja:loadClass, so register on class load.
+        init {
+            register()
+        }
+
+        @JvmStatic
+        fun init() {
+            register()
         }
     }
 
@@ -60,37 +99,58 @@ class getParts : PFuncSimpleAndList() {
 
         val graph = execCxt.activeGraph
         val dataset = execCxt.dataset
-        val topLevelParts = graph.find(subject, SchemaDO.hasPart.asNode(), Node.ANY).toList().map { it.`object` }
+        val subjectSearchNode =
+            when {
+                subject == null -> Node.ANY
+                subject.isVariable -> binding.get(Var.alloc(subject)) ?: Node.ANY
+                else -> subject
+            }
+        val topLevelParts =
+            graph
+                .find(
+                    subjectSearchNode,
+                    SchemaDO.hasPart.asNode(),
+                    Node.ANY,
+                ).toList()
+                .map { Pair(it.subject, it.`object`) }
         val parts = getCompoundNameParts(dataset, topLevelParts)
 
-        var subjectVar: Var? = null
-        val vars = binding.vars()
-        if (vars != null) {
-            while (vars.hasNext()) {
-                subjectVar = vars.next()
-            }
-        }
-        if (subjectVar == null) {
-            throw Exception("The subject variable is null.")
+        val objectArgs =
+            listOf(
+                `object`?.getArg(0),
+                `object`?.getArg(1),
+                `object`?.getArg(2),
+                `object`?.getArg(3),
+            )
+        if (objectArgs.any { it == null }) {
+            throw Exception("A call to function ai.kurrawong.jena.compoundnaming.getParts must contain 4 arguments.")
         }
 
         val bindings = mutableListOf<Binding>()
         for (part in parts) {
-            val rowBinding =
-                Binding5(
-                    binding,
-                    Var.alloc(subjectVar),
-                    binding.get(subjectVar),
-                    Var.alloc(`object`?.getArg(0)?.name),
-                    part.first,
-                    Var.alloc(`object`?.getArg(1)?.name),
-                    part.second,
-                    Var.alloc(`object`?.getArg(2)?.name),
-                    part.third,
-                    Var.alloc(`object`?.getArg(3)?.name),
-                    part.fourth,
-                )
-            bindings.add(rowBinding)
+            val rowBuilder = BindingFactory.builder(binding)
+            var isCompatible = true
+
+            if (subject != null) {
+                isCompatible = bindOrMatch(rowBuilder, subject, part.first)
+            }
+
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[0], part.second)
+            }
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[1], part.third)
+            }
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[2], part.fourth)
+            }
+            if (isCompatible) {
+                isCompatible = bindOrMatch(rowBuilder, objectArgs[3], part.fifth)
+            }
+
+            if (isCompatible) {
+                bindings.add(rowBuilder.build())
+            }
         }
 
         return QueryIterPlainWrapper.create(bindings.iterator(), execCxt)

@@ -47,7 +47,7 @@ And get the following result.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
-- `iri` - the top-level compound name.
+- `iri` - the top-level compound name. This is tied to the scope of the graph in the query. Note that the individual parts look through the entire dataset.
 - `partIds` - the path of each resource's identifier to the leaf node.
 - `partTypes` - the path of each resource's part type to the leaf node.
 - `partValuePredicate` - the predicate of the leaf node value.
@@ -55,7 +55,10 @@ And get the following result.
   - If no values were found, it sets itself to an empty literal string and sets the `partValue` to the focus node's identifier.
 - `partValue` - the leaf node value. Always a literal unless a valid part value predicate was not found, then it returns the focus node identifier.
 
+
 ## Build
+
+Requires Java 21.
 
 ```shell
 task build
@@ -63,20 +66,38 @@ task build
 
 ## Running with Fuseki in Docker
 
-After building, copy the uber jar in `build/libs` to the `docker` directory.
+This repository temporarily uses a locally-built Fuseki base image from:
+`https://github.com/Kurrawong/fuseki-container-image/pull/11`
 
-Within the context of the `docker` directory...
+Build or refresh the local temporary base image first:
 
-Build the docker compose images.
+```shell
+task docker:base:build
+```
+
+Then build and run this project's Fuseki image:
 
 ```shell
 task docker:build
-```
-
-Run the docker compose services.
-
-```shell
 task docker:up
 ```
 
-See [Taskfile.yml](Taskfile.yml) for more details.
+Run the end-to-end smoke test:
+
+```shell
+task docker:test
+```
+
+When PR #11 is merged and a `ghcr.io/kurrawong/fuseki:6.0.0-*` image is released,
+replace the temporary local base image reference in `docker/Dockerfile`.
+
+## Jena 6.0.0 Migration Notes
+
+- Minimum Java version is Java 21.
+- Reloading TDB2 datasets is recommended, especially when `xsd:decimal` values are present.
+- GeoSPARQL spatial indexes created with Jena 5.x should be recreated due to the Kryo5 upgrade.
+- `jena-text` now uses Lucene 10; existing Lucene indexes should be rebuilt.
+- Removed modules include `jena-iri`, `jena-fuseki-webapp`, `jena-fuseki-war`, and `jena-permissions`.
+- Package `org.apache.jena.tdb` is removed; use TDB2 or `org.apache.jena.tdb1` where required.
+
+See [Taskfile.yml](Taskfile.yml) for task details.
