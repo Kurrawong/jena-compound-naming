@@ -7,6 +7,8 @@ vars:
   FUSEKI_CONTAINER_IMAGE_PR_REF: refs/pull/11/head
   FUSEKI_CONTAINER_IMAGE_DIR: /tmp/fuseki-container-image-pr11
   FUSEKI_BASE_IMAGE_TAG: kurrawong/fuseki:6.0.0-pr11-local
+  # GitHub Actions automatically sets CI=true; use -q there to keep Docker build logs concise.
+  DOCKER_COMPOSE_BUILD_QUIET_FLAG: '{{if eq .CI "true"}}-q{{end}}'
 
 tasks:
   default:
@@ -24,36 +26,14 @@ tasks:
 
   docker:base:build:
     desc: build temporary local Fuseki 6.0.0 base image from upstream PR #11
-    cmds:
-      - |
-        set -euo pipefail
-
-        repo_url="{{.FUSEKI_CONTAINER_IMAGE_REPO}}"
-        repo_dir="{{.FUSEKI_CONTAINER_IMAGE_DIR}}"
-        pr_ref="{{.FUSEKI_CONTAINER_IMAGE_PR_REF}}"
-        image_tag="{{.FUSEKI_BASE_IMAGE_TAG}}"
-
-        echo "[docker:base:build] Preparing repo at ${repo_dir}"
-        if [ ! -d "${repo_dir}/.git" ]; then
-          git clone --filter=blob:none "${repo_url}" "${repo_dir}"
-        fi
-
-        echo "[docker:base:build] Fetching ${pr_ref}"
-        git -C "${repo_dir}" fetch --prune origin "${pr_ref}"
-
-        commit="$(git -C "${repo_dir}" rev-parse --short=12 FETCH_HEAD)"
-        git -C "${repo_dir}" checkout --detach FETCH_HEAD >/dev/null 2>&1
-
-        echo "[docker:base:build] Building ${image_tag} from fuseki-container-image@${commit}"
-        docker build -t "${image_tag}" -f "${repo_dir}/docker/Dockerfile" "${repo_dir}/docker"
-        echo "[docker:base:build] Built ${image_tag} from fuseki-container-image@${commit}"
+    cmd: FUSEKI_CONTAINER_IMAGE_REPO="{{.FUSEKI_CONTAINER_IMAGE_REPO}}" FUSEKI_CONTAINER_IMAGE_PR_REF="{{.FUSEKI_CONTAINER_IMAGE_PR_REF}}" FUSEKI_CONTAINER_IMAGE_DIR="{{.FUSEKI_CONTAINER_IMAGE_DIR}}" FUSEKI_BASE_IMAGE_TAG="{{.FUSEKI_BASE_IMAGE_TAG}}" ./scripts/docker-base-build.sh
 
   docker:build:
     cmds:
       - task: docker:base:build
       - task: build
       - cp build/libs/*.jar docker/compoundnaming.jar
-      - docker compose -f docker/docker-compose.yml build fuseki
+      - docker compose -f docker/docker-compose.yml build {{.DOCKER_COMPOSE_BUILD_QUIET_FLAG}} fuseki
 
   docker:up:
     cmds:
@@ -67,82 +47,6 @@ tasks:
     cmds:
       - docker compose -f docker/docker-compose.yml down -v
 
-  docker:load:
-    cmds:
-      - |
-        echo "[docker:load] Uploading src/test/resources/test.ttl to /test/data"
-        curl --retry 5 --retry-delay 1 --retry-connrefused -fsS -X PUT -H 'Content-Type: text/turtle' --data-binary @src/test/resources/test.ttl 'http://localhost:3030/test/data'
-
   docker:test:
     desc: a docker smoke test
-    cmds:
-      - |
-        set -euo pipefail
-
-        cleanup() {
-          echo "[docker:test] Cleaning up compose stack"
-          docker compose -f docker/docker-compose.yml down -v >/dev/null 2>&1 || true
-        }
-        trap cleanup EXIT
-
-        echo "[docker:test] Preparing build environment"
-        export GRADLE_USER_HOME="${GRADLE_USER_HOME:-$PWD/.gradle-local}"
-        echo "[docker:test] Stopping any existing containers"
-        docker compose -f docker/docker-compose.yml down -v >/dev/null 2>&1 || true
-        echo "[docker:test] Building project + Docker dependencies"
-        task docker:build
-        echo "[docker:test] Starting Fuseki container"
-        docker compose -f docker/docker-compose.yml up -d
-
-        echo "[docker:test] Waiting for Fuseki health endpoint"
-        ready=0
-        for _ in $(seq 1 60); do
-          if curl -fsS 'http://localhost:3030/$/ping' >/dev/null 2>&1; then
-            ready=1
-            break
-          fi
-          sleep 1
-        done
-        [ "${ready}" -eq 1 ]
-        echo "[docker:test] Fuseki is healthy"
-
-        echo "[docker:test] Loading test data into /test/data"
-        task docker:load
-
-        echo "[docker:test] Checking loaded graph size via schema:hasPart"
-        has_part_query='PREFIX schema: <https://schema.org/> SELECT (COUNT(*) AS ?count) WHERE { ?s schema:hasPart ?o }'
-        has_part_count="$(curl --retry 5 --retry-delay 1 --retry-connrefused -fsSG 'http://localhost:3030/test/query' \
-          -H 'Accept: application/sparql-results+json' \
-          --data-urlencode "query=${has_part_query}" \
-          | jq -r '.results.bindings[0].count.value')"
-        echo "[docker:test] schema:hasPart triple count: ${has_part_count}"
-
-        echo "[docker:test] Running SPARQL verification query"
-        query="$(cat <<'SPARQL'
-        PREFIX cnf: <https://linked.data.gov.au/def/cn/func/>
-        SELECT ?partTypes ?partValuePredicate ?partValue
-        WHERE {
-          BIND(<https://linked.data.gov.au/dataset/qld-addr/address/e37309a2-3916-506e-b334-30ebb444c213> AS ?iri)
-          ?iri cnf:getParts (?partIds ?partTypes ?partValuePredicate ?partValue) .
-        }
-        SPARQL
-        )"
-
-        response="$(curl --retry 5 --retry-delay 1 --retry-connrefused -fsSG 'http://localhost:3030/test/query' \
-          -H 'Accept: application/sparql-results+json' \
-          --data-urlencode "query=${query}")"
-
-        echo "[docker:test] Asserting expected row count and key binding"
-        if ! echo "${response}" | jq -e '.results.bindings | length == 12' >/dev/null; then
-          echo "[docker:test] Assertion failed: expected 12 bindings"
-          echo "${response}" | jq .
-          echo "${response}" | jq '.results.bindings | length'
-          echo "${response}" | jq '.results.bindings[:5]'
-          exit 1
-        fi
-        if ! echo "${response}" | jq -e '.results.bindings[] | select(.partTypes.value == "<https://linked.data.gov.au/def/addr-part-types/buildingLevelNumber>" and .partValuePredicate.value == "https://schema.org/value" and .partValue.value == "2")' >/dev/null; then
-          echo "[docker:test] Assertion failed: expected buildingLevelNumber schema:value 2 binding"
-          echo "${response}" | jq .
-          exit 1
-        fi
-        echo "[docker:test] All assertions passed"
+    cmd: ./scripts/docker-test.sh
