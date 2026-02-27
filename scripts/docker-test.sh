@@ -13,7 +13,6 @@ cleanup() {
 trap cleanup EXIT
 
 echo "[docker:test] Preparing build environment"
-export GRADLE_USER_HOME="${GRADLE_USER_HOME:-$PWD/.gradle-local}"
 echo "[docker:test] Stopping any existing containers"
 docker compose -f docker/docker-compose.yml down -v >/dev/null 2>&1 || true
 echo "[docker:test] Building project + Docker dependencies"

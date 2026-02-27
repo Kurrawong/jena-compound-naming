@@ -21,11 +21,11 @@ tasks:
 
   build:
     cmds:
-      - GRADLE_USER_HOME="${GRADLE_USER_HOME:-$PWD/.gradle-local}" ./gradlew clean
-      - GRADLE_USER_HOME="${GRADLE_USER_HOME:-$PWD/.gradle-local}" ./gradlew uberJar
+      - ./gradlew clean
+      - ./gradlew uberJar
 
   docker:base:build:
-    desc: build temporary local Fuseki 6.0.0 base image from upstream PR #11
+    desc: build temporary local Fuseki 6.0.0 base image from https://github.com/Kurrawong/fuseki-container-image/pull/11
     cmd: FUSEKI_CONTAINER_IMAGE_REPO="{{.FUSEKI_CONTAINER_IMAGE_REPO}}" FUSEKI_CONTAINER_IMAGE_PR_REF="{{.FUSEKI_CONTAINER_IMAGE_PR_REF}}" FUSEKI_CONTAINER_IMAGE_DIR="{{.FUSEKI_CONTAINER_IMAGE_DIR}}" FUSEKI_BASE_IMAGE_TAG="{{.FUSEKI_BASE_IMAGE_TAG}}" ./scripts/docker-base-build.sh
 
   docker:build:

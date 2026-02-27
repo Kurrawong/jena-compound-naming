@@ -88,7 +88,7 @@ Run the end-to-end smoke test:
 task docker:test
 ```
 
-When PR #11 is merged and a `ghcr.io/kurrawong/fuseki:6.0.0-*` image is released,
+When https://github.com/Kurrawong/fuseki-container-image/pull/11 is merged and a `ghcr.io/kurrawong/fuseki:6.0.0-*` image is released,
 replace the temporary local base image reference in `docker/Dockerfile`.
 
 ## Jena 6.0.0 Migration Notes
