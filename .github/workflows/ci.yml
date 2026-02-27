@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '21'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - uses: go-task/setup-task@v1
+
+      - name: Run Kotlin tests
+        run: task tests
+
+      - name: Run smoke test
+        run: task docker:test

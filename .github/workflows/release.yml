@@ -7,7 +7,7 @@ on:
 
 env:
   JDK_DISTRIBUTION: corretto
-  JDK_VERSION: 17
+  JDK_VERSION: 21
 
 jobs:
   build:

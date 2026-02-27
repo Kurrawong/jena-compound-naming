@@ -2,6 +2,14 @@
 
 version: "3"
 
+vars:
+  FUSEKI_CONTAINER_IMAGE_REPO: https://github.com/Kurrawong/fuseki-container-image.git
+  FUSEKI_CONTAINER_IMAGE_PR_REF: refs/pull/11/head
+  FUSEKI_CONTAINER_IMAGE_DIR: /tmp/fuseki-container-image-pr11
+  FUSEKI_BASE_IMAGE_TAG: kurrawong/fuseki:6.0.0-pr11-local
+  # GitHub Actions automatically sets CI=true; use -q there to keep Docker build logs concise.
+  DOCKER_COMPOSE_BUILD_QUIET_FLAG: '{{if eq .CI "true"}}-q{{end}}'
+
 tasks:
   default:
     cmd: task -a
@@ -16,11 +24,20 @@ tasks:
       - ./gradlew clean
       - ./gradlew uberJar
 
+  tests:
+    desc: run gradle tests
+    cmd: ./gradlew test
+
+  docker:base:build:
+    desc: build temporary local Fuseki 6.0.0 base image from https://github.com/Kurrawong/fuseki-container-image/pull/11
+    cmd: FUSEKI_CONTAINER_IMAGE_REPO="{{.FUSEKI_CONTAINER_IMAGE_REPO}}" FUSEKI_CONTAINER_IMAGE_PR_REF="{{.FUSEKI_CONTAINER_IMAGE_PR_REF}}" FUSEKI_CONTAINER_IMAGE_DIR="{{.FUSEKI_CONTAINER_IMAGE_DIR}}" FUSEKI_BASE_IMAGE_TAG="{{.FUSEKI_BASE_IMAGE_TAG}}" ./scripts/docker-base-build.sh
+
   docker:build:
     cmds:
+      - task: docker:base:build
       - task: build
       - cp build/libs/*.jar docker/compoundnaming.jar
-      - docker compose -f docker/docker-compose.yml build
+      - docker compose -f docker/docker-compose.yml build {{.DOCKER_COMPOSE_BUILD_QUIET_FLAG}} fuseki
 
   docker:up:
     cmds:
@@ -34,8 +51,6 @@ tasks:
     cmds:
       - docker compose -f docker/docker-compose.yml down -v
 
-  docker:load:
-    cmds:
-      - kurra db delete http://localhost:3030 ds
-      - kurra db create http://localhost:3030 --config docker/ds.ttl
-      - kurra db upload src/test/resources/test.ttl http://localhost:3030/ds
+  docker:test:
+    desc: a docker smoke test
+    cmd: ./scripts/docker-test.sh
