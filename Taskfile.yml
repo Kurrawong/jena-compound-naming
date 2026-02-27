@@ -2,6 +2,12 @@
 
 version: "3"
 
+vars:
+  FUSEKI_CONTAINER_IMAGE_REPO: https://github.com/Kurrawong/fuseki-container-image.git
+  FUSEKI_CONTAINER_IMAGE_PR_REF: refs/pull/11/head
+  FUSEKI_CONTAINER_IMAGE_DIR: /tmp/fuseki-container-image-pr11
+  FUSEKI_BASE_IMAGE_TAG: kurrawong/fuseki:6.0.0-pr11-local
+
 tasks:
   default:
     cmd: task -a
@@ -16,8 +22,35 @@ tasks:
       - GRADLE_USER_HOME="${GRADLE_USER_HOME:-$PWD/.gradle-local}" ./gradlew clean
       - GRADLE_USER_HOME="${GRADLE_USER_HOME:-$PWD/.gradle-local}" ./gradlew uberJar
 
+  docker:base:build:
+    desc: build temporary local Fuseki 6.0.0 base image from upstream PR #11
+    cmds:
+      - |
+        set -euo pipefail
+
+        repo_url="{{.FUSEKI_CONTAINER_IMAGE_REPO}}"
+        repo_dir="{{.FUSEKI_CONTAINER_IMAGE_DIR}}"
+        pr_ref="{{.FUSEKI_CONTAINER_IMAGE_PR_REF}}"
+        image_tag="{{.FUSEKI_BASE_IMAGE_TAG}}"
+
+        echo "[docker:base:build] Preparing repo at ${repo_dir}"
+        if [ ! -d "${repo_dir}/.git" ]; then
+          git clone --filter=blob:none "${repo_url}" "${repo_dir}"
+        fi
+
+        echo "[docker:base:build] Fetching ${pr_ref}"
+        git -C "${repo_dir}" fetch --prune origin "${pr_ref}"
+
+        commit="$(git -C "${repo_dir}" rev-parse --short=12 FETCH_HEAD)"
+        git -C "${repo_dir}" checkout --detach FETCH_HEAD >/dev/null 2>&1
+
+        echo "[docker:base:build] Building ${image_tag} from fuseki-container-image@${commit}"
+        docker build -t "${image_tag}" -f "${repo_dir}/docker/Dockerfile" "${repo_dir}/docker"
+        echo "[docker:base:build] Built ${image_tag} from fuseki-container-image@${commit}"
+
   docker:build:
     cmds:
+      - task: docker:base:build
       - task: build
       - cp build/libs/*.jar docker/compoundnaming.jar
       - docker compose -f docker/docker-compose.yml build fuseki
