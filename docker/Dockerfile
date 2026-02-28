@@ -1,6 +1,4 @@
-# Temporary local base image built from fuseki-container-image PR #11.
-# Switch to a released ghcr.io/kurrawong/fuseki:6.0.0-* tag once available.
-FROM kurrawong/fuseki:6.0.0-pr11-local
+FROM ghcr.io/kurrawong/fuseki:5.6.0-0
 
 ARG FUSEKI_HOME=/opt/fuseki
 ARG FUSEKI_BASE=/fuseki
