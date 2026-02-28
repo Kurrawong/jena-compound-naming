@@ -66,16 +66,9 @@ task build
 
 ## Running with Fuseki in Docker
 
-This repository temporarily uses a locally-built Fuseki base image from:
-`https://github.com/Kurrawong/fuseki-container-image/pull/11`
+This repository's Fuseki image is based on `ghcr.io/kurrawong/fuseki:5.6.0-0`.
 
-Build or refresh the local temporary base image first:
-
-```shell
-task docker:base:build
-```
-
-Then build and run this project's Fuseki image:
+Build and run this project's Fuseki image:
 
 ```shell
 task docker:build
@@ -87,9 +80,6 @@ Run the end-to-end smoke test:
 ```shell
 task docker:test
 ```
-
-When https://github.com/Kurrawong/fuseki-container-image/pull/11 is merged and a `ghcr.io/kurrawong/fuseki:6.0.0-*` image is released,
-replace the temporary local base image reference in `docker/Dockerfile`.
 
 ## Jena 6.0.0 Migration Notes
 
