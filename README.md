@@ -2,7 +2,7 @@
 
 A Java 21 Jena ARQ SPARQL property-function library for the [Compound Naming Model](https://agldwg.github.io/compound-naming-model/model.html).
 
-This extension is built against **Jena/Fuseki 6.2.0**. Other Jena 6.x releases are unsupported unless separately built and tested.
+This extension compiles against **Jena 6.0.0** and is smoke-tested on **Jena/Fuseki 6.2.0**. Jena and Fuseki are host-provided at runtime, so the same thin JAR can load on other Jena 6.x releases that keep the ARQ property-function SPI.
 
 The production implementation is Java. Jena and Fuseki are host-provided: the released JAR contains this plugin's classes only and does not bundle Jena, Fuseki, or a Kotlin runtime.
 
@@ -65,7 +65,7 @@ Requires Java 21.
 task build
 ```
 
-This produces the deployment JAR at `build/libs/compoundnaming-*.jar`. That artifact is a thin extension JAR: compile against Jena 6.2.0, but do not package Jena or Fuseki classes.
+This produces the deployment JAR at `build/libs/compoundnaming-*.jar`. That artifact is a thin extension JAR: compile against Jena 6.0.0, but do not package Jena or Fuseki classes.
 
 `task tests` / `./gradlew check` runs the unit tests and inspects the JAR so host-provided Jena/Fuseki or Kotlin classes cannot slip into the release artifact.
 
