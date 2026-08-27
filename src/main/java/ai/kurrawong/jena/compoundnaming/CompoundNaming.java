@@ -120,6 +120,7 @@ public final class CompoundNaming {
         return true;
     }
 
+    /** Inserts an empty part when absent so label and fallback branches still emit a row. */
     private static Part partFor(Map<String, Part> partsMap, String rootId) {
         return partsMap.computeIfAbsent(rootId, ignored -> new Part());
     }
