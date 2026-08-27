@@ -13,6 +13,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.SKOS;
 import org.apache.jena.vocabulary.SchemaDO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -109,5 +111,67 @@ class CompoundNamingTest {
         CompoundNamePart only = parts.iterator().next();
         assertEquals(NodeFactory.createLiteralString(""), only.valuePredicate());
         assertEquals(fallbackValue, only.value());
+    }
+
+    @Test
+    @DisplayName("top-level skos:prefLabel without schema:value still emits a part row")
+    void topLevelPrefLabelWithoutValueEmitsARow() {
+        Node subject = NodeFactory.createURI("https://example.org/place-name");
+        Node part = NodeFactory.createURI("https://example.org/part");
+        Set<CompoundNamePart> parts = partsFor(
+                subject,
+                part,
+                Triple.create(part, SKOS.prefLabel.asNode(), NodeFactory.createLiteralString("Foo")));
+
+        assertEquals(1, parts.size());
+        CompoundNamePart only = parts.iterator().next();
+        assertEquals(subject, only.rootNode());
+        assertEquals(NodeFactory.createLiteralString("<https://example.org/part>"), only.ids());
+        assertEquals(NodeFactory.createLiteralString(""), only.types());
+        assertEquals(SKOS.prefLabel.asNode(), only.valuePredicate());
+        assertEquals(NodeFactory.createLiteralString("Foo"), only.value());
+    }
+
+    @Test
+    @DisplayName("top-level rdfs:label without schema:value still emits a part row")
+    void topLevelRdfsLabelWithoutValueEmitsARow() {
+        Node subject = NodeFactory.createURI("https://example.org/place-name");
+        Node part = NodeFactory.createURI("https://example.org/part");
+        Set<CompoundNamePart> parts = partsFor(
+                subject,
+                part,
+                Triple.create(part, RDFS.label.asNode(), NodeFactory.createLiteralString("Bar")));
+
+        assertEquals(1, parts.size());
+        CompoundNamePart only = parts.iterator().next();
+        assertEquals(RDFS.label.asNode(), only.valuePredicate());
+        assertEquals(NodeFactory.createLiteralString("Bar"), only.value());
+        assertEquals(NodeFactory.createLiteralString(""), only.types());
+    }
+
+    @Test
+    @DisplayName("top-level fallback without schema:value still emits a part row")
+    void topLevelFallbackWithoutValueEmitsARow() {
+        Node subject = NodeFactory.createURI("https://example.org/place-name");
+        Node part = NodeFactory.createURI("https://example.org/part");
+        Set<CompoundNamePart> parts = partsFor(subject, part);
+
+        assertEquals(1, parts.size());
+        CompoundNamePart only = parts.iterator().next();
+        assertEquals(subject, only.rootNode());
+        assertEquals(NodeFactory.createLiteralString(""), only.ids());
+        assertEquals(NodeFactory.createLiteralString(""), only.types());
+        assertEquals(NodeFactory.createLiteralString(""), only.valuePredicate());
+        assertEquals(part, only.value());
+    }
+
+    private static Set<CompoundNamePart> partsFor(Node subject, Node part, Triple... extras) {
+        Model model = ModelFactory.createDefaultModel();
+        model.getGraph().add(Triple.create(subject, SchemaDO.hasPart.asNode(), part));
+        for (Triple extra : extras) {
+            model.getGraph().add(extra);
+        }
+        return CompoundNaming.getCompoundNameParts(
+                DatasetGraphFactory.wrap(model.getGraph()), List.of(new HasPart(subject, part)));
     }
 }
