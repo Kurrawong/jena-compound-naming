@@ -19,8 +19,13 @@ jobs:
           distribution: ${{ env.JDK_DISTRIBUTION }}
           java-version: ${{ env.JDK_VERSION }}
 
-      - name: Build with Gradle
-        run: ./gradlew uberJar
+      - uses: go-task/setup-task@v1
+
+      - name: Run tests and inspect JAR
+        run: task tests
+
+      - name: Run Jena/Fuseki 6.2.0 smoke test
+        run: task docker:test
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
