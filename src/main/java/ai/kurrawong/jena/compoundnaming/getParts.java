@@ -2,7 +2,6 @@ package ai.kurrawong.jena.compoundnaming;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -101,12 +100,12 @@ public class getParts extends PFuncSimpleAndList {
             subjectSearchNode = subject;
         }
 
-        List<Map.Entry<Node, Node>> topLevelParts = new ArrayList<>();
+        List<HasPart> topLevelParts = new ArrayList<>();
         ExtendedIterator<Triple> triples = graph.find(subjectSearchNode, SchemaDO.hasPart.asNode(), Node.ANY);
         try {
             while (triples.hasNext()) {
                 Triple triple = triples.next();
-                topLevelParts.add(Map.entry(triple.getSubject(), triple.getObject()));
+                topLevelParts.add(new HasPart(triple.getSubject(), triple.getObject()));
             }
         } finally {
             triples.close();

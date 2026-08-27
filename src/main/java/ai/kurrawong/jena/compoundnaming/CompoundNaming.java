@@ -27,13 +27,13 @@ public final class CompoundNaming {
     private CompoundNaming() {}
 
     public static Set<CompoundNamePart> getCompoundNameParts(
-            DatasetGraph dataset, List<Map.Entry<Node, Node>> topLevelParts) {
+            DatasetGraph dataset, List<HasPart> topLevelParts) {
         Map<String, Part> partsMap = new LinkedHashMap<>();
 
         for (int index = 0; index < topLevelParts.size(); index++) {
-            Map.Entry<Node, Node> partPair = topLevelParts.get(index);
+            HasPart hasPart = topLevelParts.get(index);
             getCompoundNamePartsInner(
-                    Integer.toString(index), partPair.getKey(), partPair.getValue(), dataset, partsMap);
+                    Integer.toString(index), hasPart.compoundName(), hasPart.part(), dataset, partsMap);
         }
 
         Set<CompoundNamePart> retValue = new LinkedHashSet<>();
@@ -87,23 +87,11 @@ public final class CompoundNaming {
             return;
         }
 
-        List<Node> skosPrefLabels = objects(dataset, focusNode, SKOS.prefLabel.asNode());
-        if (!skosPrefLabels.isEmpty()) {
-            Part part = partFor(partsMap, rootId);
-            part.rootNode = rootNode;
-            part.ids.add(focusNode);
-            part.valuePredicate = SKOS.prefLabel.asNode();
-            part.value = skosPrefLabels.getFirst();
+        if (bindLabel(rootId, rootNode, focusNode, dataset, partsMap, SKOS.prefLabel.asNode())) {
             return;
         }
 
-        List<Node> rdfsLabels = objects(dataset, focusNode, RDFS.label.asNode());
-        if (!rdfsLabels.isEmpty()) {
-            Part part = partFor(partsMap, rootId);
-            part.rootNode = rootNode;
-            part.ids.add(focusNode);
-            part.valuePredicate = RDFS.label.asNode();
-            part.value = rdfsLabels.getFirst();
+        if (bindLabel(rootId, rootNode, focusNode, dataset, partsMap, RDFS.label.asNode())) {
             return;
         }
 
@@ -111,6 +99,25 @@ public final class CompoundNaming {
         part.rootNode = rootNode;
         part.valuePredicate = NodeFactory.createLiteralString("");
         part.value = focusNode;
+    }
+
+    private static boolean bindLabel(
+            String rootId,
+            Node rootNode,
+            Node focusNode,
+            DatasetGraph dataset,
+            Map<String, Part> partsMap,
+            Node predicate) {
+        List<Node> labels = objects(dataset, focusNode, predicate);
+        if (labels.isEmpty()) {
+            return false;
+        }
+        Part part = partFor(partsMap, rootId);
+        part.rootNode = rootNode;
+        part.ids.add(focusNode);
+        part.valuePredicate = predicate;
+        part.value = labels.getFirst();
+        return true;
     }
 
     private static Part partFor(Map<String, Part> partsMap, String rootId) {

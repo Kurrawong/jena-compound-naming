@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.jena.graph.Node;
@@ -20,16 +19,16 @@ import org.junit.jupiter.api.Test;
 
 class CompoundNamingTest {
     @Test
-    @DisplayName("test2 compound naming")
+    @DisplayName("a known Compound Name returns the expected part rows (partTypes, partValuePredicate, partValue)")
     void knownSubjectReturnsExpectedPartRows() {
         Model model = TestResources.loadModelFromResource("test.ttl");
         Node subject = NodeFactory.createURI(
                 "https://linked.data.gov.au/dataset/qld-addr/address/e37309a2-3916-506e-b334-30ebb444c213");
-        List<Map.Entry<Node, Node>> topLevelParts = model.getGraph()
+        List<HasPart> topLevelParts = model.getGraph()
                 .find(subject, SchemaDO.hasPart.asNode(), Node.ANY)
                 .toList()
                 .stream()
-                .map(triple -> Map.entry(triple.getSubject(), triple.getObject()))
+                .map(triple -> new HasPart(triple.getSubject(), triple.getObject()))
                 .toList();
         Set<CompoundNamePart> parts =
                 CompoundNaming.getCompoundNameParts(DatasetGraphFactory.wrap(model.getGraph()), topLevelParts);
@@ -102,7 +101,7 @@ class CompoundNamingTest {
         model.getGraph().add(Triple.create(part, SchemaDO.additionalType.asNode(), partType));
         model.getGraph().add(Triple.create(part, SchemaDO.value.asNode(), fallbackValue));
 
-        List<Map.Entry<Node, Node>> topLevelParts = List.of(Map.entry(subject, part));
+        List<HasPart> topLevelParts = List.of(new HasPart(subject, part));
         Set<CompoundNamePart> parts =
                 CompoundNaming.getCompoundNameParts(DatasetGraphFactory.wrap(model.getGraph()), topLevelParts);
 
