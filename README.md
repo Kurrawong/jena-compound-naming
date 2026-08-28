@@ -1,16 +1,18 @@
 # Jena ARQ Compound Naming Property Functions Library
 
-A library of Jena ARQ SPARQL functions for working with the [Compound Naming Model](https://agldwg.github.io/compound-naming-model/model.html).
+A Java 21 Jena ARQ SPARQL property-function library for the [Compound Naming Model](https://agldwg.github.io/compound-naming-model/model.html).
 
-## Example code usage
+This extension compiles against **Jena 6.0.0** and is smoke-tested on **Jena/Fuseki 6.2.0**. Jena and Fuseki are host-provided at runtime, so the same thin JAR can load on other Jena 6.x releases that keep the ARQ property-function SPI.
 
-See [Main.kt](src/main/kotlin/Main.kt) that loads in [src/main/resources/data.ttl](src/main/resources/data.ttl) as an example of how to call the `getParts` function.
+The production implementation is Java. Jena and Fuseki are host-provided: the released JAR contains this plugin's classes only and does not bundle Jena, Fuseki, or a Kotlin runtime.
 
-Given a subject that's a `cn:CompoundName`, recursively retrieve all of its parts that make up the compounded name. The result is a flattened set of "part" rows.
+## Example SPARQL usage
+
+Given a subject that is a `cn:CompoundName`, recursively retrieve all of its parts that make up the compounded name. The result is a flattened set of "part" rows.
 
 Where part identifiers are blank nodes, the internal Jena system identifier is returned. This can be used in tandem with RDF Delta Patch logs to provide updates to blank node objects.
 
-The following example executes the SPARQL query on the data file [src/test/resources/test.ttl](src/test/resources/test.ttl).
+The following example executes the SPARQL query on the data file [src/test/resources/test.ttl](src/test/resources/test.ttl). Example RDF also lives at [examples/data.ttl](examples/data.ttl).
 
 ```sparql
 PREFIX cnf: <https://linked.data.gov.au/def/cn/func/>
@@ -55,7 +57,6 @@ And get the following result.
   - If no values were found, it sets itself to an empty literal string and sets the `partValue` to the focus node's identifier.
 - `partValue` - the leaf node value. Always a literal unless a valid part value predicate was not found, then it returns the focus node identifier.
 
-
 ## Build
 
 Requires Java 21.
@@ -64,9 +65,28 @@ Requires Java 21.
 task build
 ```
 
+This produces the deployment JAR at `build/libs/compoundnaming-*.jar`. That artifact is a thin extension JAR: compile against Jena 6.0.0, but do not package Jena or Fuseki classes.
+
+`task tests` / `./gradlew check` runs the unit tests and inspects the JAR so host-provided Jena/Fuseki or Kotlin classes cannot slip into the release artifact.
+
+## Install on Fuseki
+
+Copy the plugin JAR onto the Fuseki extension classpath:
+
+```text
+/opt/fuseki/lib
+```
+
+Register the Java implementation with `ja:loadClass`. Class initialization registers `https://linked.data.gov.au/def/cn/func/getParts` with Jena's `PropertyFunctionRegistry`:
+
+```turtle
+[] a fuseki:Server ;
+   ja:loadClass "ai.kurrawong.jena.compoundnaming.getParts" .
+```
+
 ## Running with Fuseki in Docker
 
-This repository's Fuseki image is based on `ghcr.io/kurrawong/fuseki:5.6.0-0`.
+The development and smoke-test image is `ghcr.io/kurrawong/fuseki:6.2.0-0` (Jena/Fuseki 6.2.0, Java 21).
 
 Build and run this project's Fuseki image:
 
@@ -75,19 +95,10 @@ task docker:build
 task docker:up
 ```
 
-Run the end-to-end smoke test:
+Run the end-to-end smoke test, which builds the release JAR, installs it into `/opt/fuseki/lib`, and executes `cnf:getParts` over HTTP:
 
 ```shell
 task docker:test
 ```
-
-## Jena 6.0.0 Migration Notes
-
-- Minimum Java version is Java 21.
-- Reloading TDB2 datasets is recommended, especially when `xsd:decimal` values are present.
-- GeoSPARQL spatial indexes created with Jena 5.x should be recreated due to the Kryo5 upgrade.
-- `jena-text` now uses Lucene 10; existing Lucene indexes should be rebuilt.
-- Removed modules include `jena-iri`, `jena-fuseki-webapp`, `jena-fuseki-war`, and `jena-permissions`.
-- Package `org.apache.jena.tdb` is removed; use TDB2 or `org.apache.jena.tdb1` where required.
 
 See [Taskfile.yml](Taskfile.yml) for task details.

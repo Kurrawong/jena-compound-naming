@@ -1,4 +1,4 @@
-FROM ghcr.io/kurrawong/fuseki:5.6.0-0
+FROM ghcr.io/kurrawong/fuseki:6.2.0-0
 
 ARG FUSEKI_HOME=/opt/fuseki
 ARG FUSEKI_BASE=/fuseki

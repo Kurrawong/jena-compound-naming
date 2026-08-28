@@ -1,12 +1,10 @@
+import java.util.jar.JarFile
+
 val projectVersion: String by project
-val log4jVersion: String by project
-val kotlinxSerializationJsonVersion: String by project
 val jenaVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.9.25"
-    kotlin("plugin.serialization") version "1.9.25"
-    application
+    java
 }
 
 group = "ai.kurrawong.jena"
@@ -16,36 +14,58 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 dependencies {
-    testImplementation(kotlin("test"))
-    implementation("org.apache.logging.log4j:log4j:$log4jVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationJsonVersion")
-    implementation("org.apache.jena:jena-core:$jenaVersion")
-    implementation("org.apache.jena:jena-arq:$jenaVersion")
+    compileOnly("org.apache.jena:jena-arq:$jenaVersion")
+
+    testImplementation("org.apache.jena:jena-arq:$jenaVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
-tasks.register<Jar>("uberJar") {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+val inspectJar by tasks.registering {
+    group = "verification"
+    description = "Fail if the extension JAR bundles Jena, Fuseki, Kotlin, or other host-provided classes."
+    dependsOn(tasks.jar)
 
-    from(sourceSets.main.get().output)
-
-    dependsOn(configurations.runtimeClasspath)
-    from({
-        configurations.runtimeClasspath
-            .get()
-            .filter { it.name.endsWith("jar") }
-            .map { zipTree(it) }
-    })
+    doLast {
+        val jarFile = tasks.jar.get().archiveFile.get().asFile
+        val forbiddenPrefixes =
+            listOf(
+                "org/apache/jena/",
+                "org/apache/kotlin/",
+                "kotlin/",
+                "kotlinx/",
+                "org/jetbrains/kotlin/",
+                "org/apache/logging/",
+            )
+        JarFile(jarFile).use { jar ->
+            val violations =
+                jar.entries()
+                    .asSequence()
+                    .map { it.name }
+                    .filter { name -> forbiddenPrefixes.any { name.startsWith(it) } }
+                    .sorted()
+                    .toList()
+            if (violations.isNotEmpty()) {
+                throw GradleException(
+                    "Extension JAR ${jarFile.name} contains host-provided or unintended classes:\n" +
+                        violations.joinToString("\n"),
+                )
+            }
+        }
+    }
 }
 
-kotlin {
-    jvmToolchain(21)
-}
-
-application {
-    mainClass.set("MainKt")
+tasks.named("check") {
+    dependsOn(inspectJar)
 }
